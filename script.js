@@ -20,6 +20,7 @@ const dietData = {
         { name: "연어", kcal: 208, carbs: 0, protein: 20.0, fat: 13.0 },
         { name: "참치", kcal: 116, carbs: 0, protein: 26.0, fat: 0.8 },
         { name: "두부", kcal: 80, carbs: 1.9, protein: 8.5, fat: 4.2 },
+        { name: "달걀", kcal: 143, carbs: 0.7, protein: 12.6, fat: 9.5 },
         { name: "그릭요거트", kcal: 97, carbs: 3.9, protein: 9.0, fat: 5.0 }
     ],
     vegetables: [
@@ -40,6 +41,13 @@ const dietData = {
         { name: "올리브유", kcal: 884, carbs: 0, protein: 0, fat: 100 },
         { name: "들기름", kcal: 884, carbs: 0, protein: 0, fat: 100 },
         { name: "참기름", kcal: 884, carbs: 0, protein: 0, fat: 100 }
+    ],
+    fruits: [
+        { name: "바나나", kcal: 89, carbs: 22.8, protein: 1.1, fat: 0.3 },
+        { name: "사과", kcal: 52, carbs: 13.8, protein: 0.3, fat: 0.2 },
+        { name: "블루베리", kcal: 57, carbs: 14.5, protein: 0.7, fat: 0.3 },
+        { name: "오렌지", kcal: 47, carbs: 11.8, protein: 0.9, fat: 0.1 },
+        { name: "키위", kcal: 61, carbs: 14.7, protein: 1.1, fat: 0.5 }
     ]
 };
 
@@ -165,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!activeUserId || !currentUserData.recommendedCalories) return;
 
         const savedPlan = {
-            version: 3,
+            version: 4,
             savedAt: new Date().toISOString(),
             userData: currentUserData,
             result: {
@@ -217,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
             currentUserData = savedPlan.userData;
             fillSavedInputs(currentUserData);
 
-            if (savedPlan.version !== 3) {
+            if (savedPlan.version !== 4) {
                 generateResults(currentUserData);
                 sectionInfo.classList.add("hidden");
                 sectionDiagnostic.classList.add("hidden");
@@ -398,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (data.goal === "muscle") {
             recommendedCalories = maintenanceCal + 250; // 약 200~300kcal 높게
         }
-        recommendedCalories = Math.round(recommendedCalories);
+        recommendedCalories = Math.min(2500, Math.round(recommendedCalories));
         data.recommendedCalories = recommendedCalories;
 
         // 화면 표출 - 신체 스탯
@@ -467,10 +475,10 @@ document.addEventListener("DOMContentLoaded", () => {
         dietContainer.innerHTML = "";
 
         const meals = [
-            { name: "아침 🍳", cWeight: 0.25 },
-            { name: "점심 🍱", cWeight: 0.35 },
-            { name: "저녁 🥗", cWeight: 0.30 },
-            { name: "간식 🍌", cWeight: 0.10 }
+            { name: "아침 🍳", cWeight: 0.25, kind: "breakfast" },
+            { name: "점심 🍱", cWeight: 0.35, kind: "lunch" },
+            { name: "저녁 🥗", cWeight: 0.30, kind: "dinner" },
+            { name: "간식 🍌", cWeight: 0.10, kind: "snack" }
         ];
 
         const dailyTotal = { kcal: 0, carbs: 0, protein: 0, fat: 0 };
@@ -494,6 +502,8 @@ document.addEventListener("DOMContentLoaded", () => {
             };
         };
 
+        const foodsNamed = (category, names) => dietData[category].filter(food => names.includes(food.name));
+
         const renderFood = (role, icon, color, food) => `
             <div class="diet-item">
                 <div class="food-heading">
@@ -511,15 +521,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
         meals.forEach(meal => {
             const mealCal = Math.round(totalCal * meal.cWeight);
-            const vegetableGrams = meal.cWeight === 0.10 ? 100 : 150;
-            const vegetableFood = getRandomItem(dietData.vegetables);
-            const vegetableCalories = vegetableFood.kcal * vegetableGrams / 100;
-            const foods = [
-                { role: "탄수화물", icon: "fa-bowl-rice", color: "var(--carbs)", food: calculateServing(getRandomItem(dietData.carbs), Math.max(20, mealCal * calorieSplit.carbs - vegetableCalories)) },
-                { role: "단백질", icon: "fa-egg", color: "var(--protein)", food: calculateServing(getRandomItem(dietData.protein), mealCal * calorieSplit.protein) },
-                { role: "채소", icon: "fa-carrot", color: "#22c55e", food: calculateServing(vegetableFood, vegetableCalories) },
-                { role: "지방", icon: "fa-seedling", color: "var(--fat)", food: calculateServing(getRandomItem(dietData.fats), mealCal * calorieSplit.fat) }
-            ];
+            let foods = [];
+
+            if (meal.kind === "snack") {
+                const snackProtein = foodsNamed("protein", ["그릭요거트"]);
+                const snackFats = foodsNamed("fats", ["아몬드", "호두", "캐슈넛"]);
+                foods = [
+                    { role: "과일", icon: "fa-apple-whole", color: "#ef4444", food: calculateServing(getRandomItem(dietData.fruits), mealCal * 0.45) },
+                    { role: "유제품", icon: "fa-cow", color: "var(--protein)", food: calculateServing(getRandomItem(snackProtein), mealCal * 0.35) },
+                    { role: "견과류", icon: "fa-seedling", color: "var(--fat)", food: calculateServing(getRandomItem(snackFats), mealCal * 0.20) }
+                ];
+            } else {
+                const vegetableGrams = meal.kind === "breakfast" ? 100 : 150;
+                const vegetablePool = meal.kind === "breakfast"
+                    ? foodsNamed("vegetables", ["오이", "방울토마토", "파프리카"])
+                    : dietData.vegetables;
+                const carbPool = meal.kind === "breakfast"
+                    ? foodsNamed("carbs", ["오트밀", "통밀빵", "고구마"])
+                    : dietData.carbs;
+                const proteinPool = meal.kind === "breakfast"
+                    ? foodsNamed("protein", ["달걀", "두부", "그릭요거트"])
+                    : dietData.protein.filter(food => !["그릭요거트", "달걀", "두부"].includes(food.name));
+                const fatPool = meal.kind === "breakfast"
+                    ? foodsNamed("fats", ["아몬드", "호두", "캐슈넛", "아보카도"])
+                    : dietData.fats;
+                const vegetableFood = getRandomItem(vegetablePool);
+                const vegetableCalories = vegetableFood.kcal * vegetableGrams / 100;
+
+                foods = [
+                    { role: "탄수화물", icon: "fa-bowl-rice", color: "var(--carbs)", food: calculateServing(getRandomItem(carbPool), Math.max(20, mealCal * calorieSplit.carbs - vegetableCalories)) },
+                    { role: "단백질", icon: "fa-egg", color: "var(--protein)", food: calculateServing(getRandomItem(proteinPool), mealCal * calorieSplit.protein) },
+                    { role: "채소", icon: "fa-carrot", color: "#22c55e", food: calculateServing(vegetableFood, vegetableCalories) },
+                    { role: "지방", icon: "fa-seedling", color: "var(--fat)", food: calculateServing(getRandomItem(fatPool), mealCal * calorieSplit.fat) }
+                ];
+            }
 
             const mealTotal = foods.reduce((total, item) => {
                 total.kcal += item.food.totalKcal;
