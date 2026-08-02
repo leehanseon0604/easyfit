@@ -123,7 +123,18 @@
         </section>
 
         <section id="section-result" class="hidden">
-            
+            <div class="dashboard-shell">
+                <aside class="dashboard-sidebar" aria-label="맞춤 프로그램 메뉴">
+                    <div class="sidebar-title"><i class="fa-solid fa-heart-pulse"></i><span>MY EASY FIT</span></div>
+                    <nav class="dashboard-nav">
+                        <button type="button" class="active" data-dashboard-page="overview"><i class="fa-solid fa-chart-pie"></i><span>나의 요약</span></button>
+                        <button type="button" data-dashboard-page="checklist"><i class="fa-solid fa-calendar-check"></i><span>체크리스트</span></button>
+                        <button type="button" data-dashboard-page="diet"><i class="fa-solid fa-utensils"></i><span>식단</span></button>
+                        <button type="button" data-dashboard-page="workout"><i class="fa-solid fa-dumbbell"></i><span>운동</span></button>
+                    </nav>
+                </aside>
+                <div class="dashboard-content">
+                    <div class="dashboard-page active" data-page="overview">
             <div class="card result-card">
                 <h2><i class="fa-solid fa-chart-pie"></i> 나의 신체 및 필요 칼로리</h2>
                 <div class="stats-grid">
@@ -156,6 +167,8 @@
                 </div>
             </div>
 
+                    </div>
+                    <div class="dashboard-page" data-page="checklist">
             <div class="card result-card mt-4" id="daily-checkin-card">
                 <div class="checkin-heading">
                     <div>
@@ -192,6 +205,8 @@
                 <div class="calendar-legend"><span><i></i> 체크리스트 전체 완료</span><strong>하루 완료 시 +100 P</strong></div>
             </div>
 
+                    </div>
+                    <div class="dashboard-page" data-page="diet">
             <div class="card result-card mt-4">
                 <h2><i class="fa-solid fa-utensils"></i> 맞춤형 하루 식단 추천</h2>
                 <button type="button" class="btn btn-small" id="btn-regen-diet"><i class="fa-solid fa-rotate"></i> 식단 다시 뽑기</button>
@@ -200,10 +215,15 @@
                     </div>
             </div>
 
+                    </div>
+                    <div class="dashboard-page" data-page="workout">
             <div class="card result-card mt-4">
                 <h2><i class="fa-solid fa-dumbbell"></i> 맞춤형 운동 프로그램 (<span id="res-split-type"></span>)</h2>
                 <div id="workout-container">
                     </div>
+            </div>
+                    </div>
+                </div>
             </div>
             
             <div class="text-center mt-4">

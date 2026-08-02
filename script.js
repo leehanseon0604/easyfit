@@ -157,6 +157,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalPoints = document.getElementById("total-points");
     const btnCalendarPrev = document.getElementById("calendar-prev");
     const btnCalendarNext = document.getElementById("calendar-next");
+    const dashboardNavButtons = [...document.querySelectorAll("[data-dashboard-page]")];
+    const dashboardPages = [...document.querySelectorAll("[data-page]")];
+
+    function showDashboardPage(requestedPage, updateUrl = true) {
+        const validPages = dashboardPages.map(page => page.dataset.page);
+        const pageName = validPages.includes(requestedPage) ? requestedPage : "overview";
+        dashboardPages.forEach(page => page.classList.toggle("active", page.dataset.page === pageName));
+        dashboardNavButtons.forEach(button => {
+            const isActive = button.dataset.dashboardPage === pageName;
+            button.classList.toggle("active", isActive);
+            button.setAttribute("aria-current", isActive ? "page" : "false");
+        });
+        if (updateUrl) history.replaceState(null, "", `#${pageName}`);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
     // 입력 요소 - 신체 정보
     const inputHeight = document.getElementById("height");
@@ -410,6 +425,11 @@ document.addEventListener("DOMContentLoaded", () => {
         calendarViewDate = new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1);
         renderCalendar(activeUserId);
     });
+    dashboardNavButtons.forEach(button => {
+        button.addEventListener("click", () => showDashboardPage(button.dataset.dashboardPage));
+    });
+    window.addEventListener("hashchange", () => showDashboardPage(window.location.hash.slice(1), false));
+    showDashboardPage(window.location.hash.slice(1), false);
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") loadDailyChecklist(activeUserId);
     });
@@ -482,6 +502,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 화면 전환
         switchSection(sectionDiagnostic, sectionResult);
+        showDashboardPage("overview");
         saveCurrentPlan();
     });
 
