@@ -242,6 +242,66 @@ input[type="number"]:focus, select:focus {
 }
 
 /* ====================================
+   오늘의 실천 체크리스트
+   ==================================== */
+.checkin-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.checkin-heading h2 { margin-bottom: 0.35rem; }
+.checkin-heading p { color: var(--text-light); font-size: 0.9rem; }
+
+.checkin-badge {
+    flex: 0 0 auto;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.daily-checklist {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.65rem;
+    margin: 1.25rem 0;
+}
+
+.daily-checklist label { margin: 0; }
+.daily-checklist input { position: absolute; opacity: 0; pointer-events: none; }
+.daily-checklist span {
+    min-height: 88px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.8rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-color);
+    color: var(--text-light);
+    text-align: center;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.daily-checklist span i { font-size: 1.15rem; }
+.daily-checklist input:focus-visible + span { outline: 3px solid rgba(59, 130, 246, 0.3); }
+.daily-checklist input:checked + span { border-color: var(--primary); background: #eff6ff; color: var(--primary); font-weight: 700; }
+.daily-checklist input:disabled + span { cursor: default; opacity: 0.8; }
+.daily-checklist input:checked:disabled + span { opacity: 1; }
+
+.checkin-save { margin-top: 0.25rem; }
+.checkin-save:disabled { background: var(--secondary); color: var(--text-light); cursor: not-allowed; transform: none; }
+.checkin-status { margin-top: 0.7rem; color: var(--text-light); text-align: center; font-size: 0.85rem; }
+
+/* ====================================
    결과 화면 - 영양소 비율 바
    ==================================== */
 .macro-bar {
@@ -412,6 +472,7 @@ input[type="number"]:focus, select:focus {
    ==================================== */
 @media (max-width: 768px) {
     .stats-grid { grid-template-columns: 1fr; }
+    .daily-checklist { grid-template-columns: repeat(2, 1fr); }
     .diet-grid { grid-template-columns: 1fr; }
     .diet-summary { grid-template-columns: 1fr; }
     .food-heading { flex-wrap: wrap; }

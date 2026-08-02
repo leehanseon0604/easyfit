@@ -156,6 +156,25 @@
                 </div>
             </div>
 
+            <div class="card result-card mt-4" id="daily-checkin-card">
+                <div class="checkin-heading">
+                    <div>
+                        <h2><i class="fa-solid fa-calendar-check"></i> 오늘의 실천 체크</h2>
+                        <p id="daily-check-date"></p>
+                    </div>
+                    <span class="checkin-badge">하루 1회</span>
+                </div>
+                <div class="daily-checklist" id="daily-checklist">
+                    <label><input type="checkbox" value="breakfast"><span><i class="fa-solid fa-mug-hot"></i> 아침 식단</span></label>
+                    <label><input type="checkbox" value="lunch"><span><i class="fa-solid fa-bowl-food"></i> 점심 식단</span></label>
+                    <label><input type="checkbox" value="dinner"><span><i class="fa-solid fa-utensils"></i> 저녁 식단</span></label>
+                    <label><input type="checkbox" value="snack"><span><i class="fa-solid fa-apple-whole"></i> 간식 계획</span></label>
+                    <label><input type="checkbox" value="workout"><span><i class="fa-solid fa-dumbbell"></i> 오늘의 운동</span></label>
+                </div>
+                <button type="button" class="btn btn-primary checkin-save" id="save-daily-check" disabled>오늘 기록 저장하기</button>
+                <p class="checkin-status" id="daily-check-status" aria-live="polite">완료한 항목을 선택해 주세요.</p>
+            </div>
+
             <div class="card result-card mt-4">
                 <h2><i class="fa-solid fa-utensils"></i> 맞춤형 하루 식단 추천</h2>
                 <button type="button" class="btn btn-small" id="btn-regen-diet"><i class="fa-solid fa-rotate"></i> 식단 다시 뽑기</button>

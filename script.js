@@ -148,6 +148,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnGenerate = document.getElementById("btn-generate");
     const btnRegenDiet = document.getElementById("btn-regen-diet");
     const btnRestart = document.getElementById("btn-restart");
+    const btnSaveDailyCheck = document.getElementById("save-daily-check");
+    const dailyCheckDate = document.getElementById("daily-check-date");
+    const dailyCheckStatus = document.getElementById("daily-check-status");
+    const dailyCheckInputs = [...document.querySelectorAll('#daily-checklist input[type="checkbox"]')];
 
     // 입력 요소 - 신체 정보
     const inputHeight = document.getElementById("height");
@@ -169,6 +173,67 @@ document.addEventListener("DOMContentLoaded", () => {
     let activeUserId = window.easyFitAuthUserId || null;
 
     const storageKey = (uid) => `easyfit-saved-plan:${uid}`;
+    const localDateKey = () => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const day = String(today.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
+    const dailyCheckKey = (uid) => `easyfit-daily-check:${uid}:${localDateKey()}`;
+
+    function updateDailyCheckButton() {
+        const hasSelection = dailyCheckInputs.some(input => input.checked);
+        const isLocked = dailyCheckInputs.some(input => input.disabled);
+        btnSaveDailyCheck.disabled = !activeUserId || !hasSelection || isLocked;
+    }
+
+    function loadDailyChecklist(uid) {
+        dailyCheckDate.textContent = new Intl.DateTimeFormat("ko-KR", { dateStyle: "full" }).format(new Date());
+        dailyCheckInputs.forEach(input => {
+            input.checked = false;
+            input.disabled = !uid;
+        });
+
+        if (!uid) {
+            dailyCheckStatus.textContent = "로그인하면 오늘의 실천 기록을 저장할 수 있습니다.";
+            updateDailyCheckButton();
+            return;
+        }
+
+        const savedRecord = localStorage.getItem(dailyCheckKey(uid));
+        if (savedRecord) {
+            try {
+                const record = JSON.parse(savedRecord);
+                dailyCheckInputs.forEach(input => {
+                    input.checked = Boolean(record.items?.[input.value]);
+                    input.disabled = true;
+                });
+                const completedCount = dailyCheckInputs.filter(input => input.checked).length;
+                dailyCheckStatus.textContent = `오늘 기록 완료 · ${completedCount}/${dailyCheckInputs.length}개 실천`;
+                btnSaveDailyCheck.textContent = "오늘 기록 완료";
+            } catch (error) {
+                console.error("오늘의 체크리스트 복원 오류:", error);
+                localStorage.removeItem(dailyCheckKey(uid));
+            }
+        } else {
+            dailyCheckStatus.textContent = "완료한 항목을 선택한 뒤 저장해 주세요. 저장은 하루 한 번만 가능합니다.";
+            btnSaveDailyCheck.textContent = "오늘 기록 저장하기";
+        }
+        updateDailyCheckButton();
+    }
+
+    function saveDailyChecklist() {
+        if (!activeUserId || localStorage.getItem(dailyCheckKey(activeUserId))) return;
+
+        const items = Object.fromEntries(dailyCheckInputs.map(input => [input.value, input.checked]));
+        localStorage.setItem(dailyCheckKey(activeUserId), JSON.stringify({
+            date: localDateKey(),
+            savedAt: new Date().toISOString(),
+            items
+        }));
+        loadDailyChecklist(activeUserId);
+    }
 
     function saveCurrentPlan() {
         if (!activeUserId || !currentUserData.recommendedCalories) return;
@@ -265,9 +330,17 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("easyfit-auth-changed", (event) => {
         activeUserId = event.detail.uid;
         if (activeUserId) restoreSavedPlan(activeUserId);
+        loadDailyChecklist(activeUserId);
     });
 
     if (activeUserId) restoreSavedPlan(activeUserId);
+    loadDailyChecklist(activeUserId);
+
+    dailyCheckInputs.forEach(input => input.addEventListener("change", updateDailyCheckButton));
+    btnSaveDailyCheck.addEventListener("click", saveDailyChecklist);
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") loadDailyChecklist(activeUserId);
+    });
 
     /* ====================================
        1. 이벤트 리스너 설정
