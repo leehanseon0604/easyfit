@@ -1,0 +1,446 @@
+/* ====================================
+   식단 데이터베이스
+   ==================================== */
+const dietData = {
+    carbs: [
+        "현미밥", "귀리밥", "잡곡밥", "흑미밥", "찰보리밥", "곤약밥", 
+        "오트밀", "통밀빵", "통밀파스타", "메밀면", "고구마", "감자", "단호박", "옥수수"
+    ],
+    protein: [
+        "닭가슴살", "닭안심", "닭다리살(껍질 제거)", "훈제오리", "돼지 안심", "등심", 
+        "앞다리살", "우둔살", "홍두깨살", "부채살", "연어", "고등어", "참치", "두부", "계란", "그릭요거트"
+    ],
+    vegetables: [
+        "양상추", "상추", "오이", "파프리카", "당근", "방울토마토", "시금치", 
+        "케일", "양배추", "버섯", "미역", "김"
+    ],
+    fats: [
+        "아몬드", "호두", "피칸", "캐슈넛", "아보카도", "올리브유", "들기름", "참기름"
+    ]
+};
+
+/* ====================================
+   운동 데이터베이스 생성 헬퍼 함수
+   ==================================== */
+function createExercise(part, subPart, name, sets, reps, rest, purpose, difficulty, caution, description, mistakes) {
+    return {
+        part,
+        subPart,
+        name,
+        sets,
+        reps,
+        rest,
+        purpose,
+        difficulty,
+        caution,
+        description,
+        mistakes,
+        youtube: `https://www.youtube.com/results?search_query=${encodeURIComponent(name + ' 운동방법')}`
+    };
+}
+
+/* ====================================
+   운동 데이터베이스
+   ==================================== */
+const workoutData = {
+    chest: [
+        // 윗가슴
+        createExercise("가슴", "윗가슴", "인클라인 바벨 벤치프레스", 4, "8~12회", "90초", "상흉근 비대", "중급", "어깨가 과도하게 들리지 않도록 주의", "벤치를 30~45도 설정 후 바벨을 쇄골 아래쪽으로 내리며 가슴을 이완시킵니다.", "허리를 너무 과도하게 꺾거나 바벨을 너무 위로 내리는 실수"),
+        createExercise("가슴", "윗가슴", "인클라인 덤벨 프레스", 4, "10~12회", "60초", "상흉근 비대 및 밸런스", "중급", "덤벨이 흔들리지 않게 코어에 힘을 줍니다.", "덤벨을 내리며 가슴을 늘려주고, 밀어올릴 때 가슴을 모아줍니다.", "팔꿈치가 뒤로 너무 빠지면서 어깨에 무리가 가는 실수"),
+        createExercise("가슴", "윗가슴", "인클라인 머신 프레스", 3, "12~15회", "60초", "안전한 상흉근 고립", "초급", "머신 궤적에 맞춰 자연스럽게 밀어줍니다.", "의자 높이를 조절하여 손잡이가 윗가슴 위치에 오도록 하고 밉니다.", "어깨가 으쓱 올라간 상태로 미는 실수"),
+        createExercise("가슴", "윗가슴", "로우 투 하이 케이블 플라이", 3, "12~15회", "60초", "상흉근 안쪽 자극", "중급", "팔꿈치를 살짝 굽힌 상태를 유지합니다.", "케이블을 아래에서 위로 끌어올리며 윗가슴을 쥐어짭니다.", "반동을 심하게 사용하여 허리로 들어올리는 실수"),
+        // 중간가슴
+        createExercise("가슴", "중간가슴", "벤치프레스", 4, "8~12회", "90초", "흉근 전체 크기 증가", "중급", "손목이 꺾이지 않도록 바를 단단히 잡습니다.", "바벨을 명치 살짝 위쪽으로 내렸다가 그대로 밀어올립니다.", "견갑(날개뼈)이 고정되지 않아 어깨가 뜨는 실수"),
+        createExercise("가슴", "중간가슴", "덤벨프레스", 4, "10~12회", "60초", "가슴 근육 가동범위 최대화", "중급", "양팔의 균형을 맞추는 데 집중합니다.", "가슴을 열어주며 덤벨을 깊게 내리고 가슴 힘으로 밀어올립니다.", "덤벨을 밀어올릴 때 서로 부딪히게 하는 실수"),
+        createExercise("가슴", "중간가슴", "체스트프레스 (머신)", 3, "12~15회", "60초", "기본 흉근 발달", "초급", "등을 패드에 밀착시킵니다.", "안정적인 자세로 그립을 쥐고 가슴을 모아준다는 느낌으로 밉니다.", "팔꿈치를 완전히 다 펴서 관절에 무리를 주는 실수"),
+        // 아랫가슴
+        createExercise("가슴", "아랫가슴", "디클라인 벤치프레스", 4, "8~12회", "90초", "하흉근 발달", "고급", "머리가 아래로 향하므로 혈압에 주의합니다.", "벤치 각도를 아래로 기울이고 바벨을 명치 쪽으로 내리며 프레스합니다.", "바벨을 목 쪽으로 내리는 실수"),
+        createExercise("가슴", "아랫가슴", "딥스", 4, "8~12회", "90초", "하흉근 및 삼두 발달", "중급", "어깨 유연성에 맞게 가동범위를 설정합니다.", "상체를 앞으로 살짝 숙인 상태에서 팔꿈치를 굽혀 내려갔다 올라옵니다.", "상체를 세우고 수행하여 삼두에만 자극이 가는 실수"),
+        createExercise("가슴", "아랫가슴", "하이 투 로우 케이블 플라이", 3, "12~15회", "60초", "하흉근 선명도 증가", "중급", "가슴을 활짝 편 상태를 유지합니다.", "위에서 아래로 원을 그리듯 케이블을 모아줍니다.", "상체가 과도하게 숙여지는 실수"),
+        // 안쪽가슴
+        createExercise("가슴", "가슴 안쪽", "케이블 크로스오버", 3, "12~15회", "60초", "가슴 중앙부 조임", "중급", "팔이 아닌 가슴으로 모아준다는 느낌을 유지합니다.", "양쪽 케이블을 잡고 가슴 앞으로 안듯이 모아줍니다.", "팔꿈치 각도가 계속 변하며 프레스처럼 밀어버리는 실수"),
+        createExercise("가슴", "가슴 안쪽", "펙덱 플라이", 3, "12~15회", "60초", "가슴 분리도 향상", "초급", "어깨가 패드에서 떨어지지 않게 합니다.", "팔꿈치를 패드에 대거나 손잡이를 잡고 원을 그리듯 모아줍니다.", "가슴을 내밀지 않고 등이 말린 상태로 모으는 실수")
+    ],
+    back: [
+        // 광배근
+        createExercise("등", "광배근", "랫풀다운", 4, "10~12회", "60초", "광배근 너비 발달", "초급", "허리를 과도하게 꺾지 않습니다.", "바를 쇄골 쪽으로 당기며 날개뼈를 아래로 모아줍니다.", "팔 힘으로만 바를 수직으로 끌어내리는 실수"),
+        createExercise("등", "광배근", "풀업", 4, "실패지점까지", "90초", "등 전체 너비 증가", "중급", "가슴을 열고 시선은 위를 향합니다.", "견갑을 하강시키며 팔꿈치를 옆구리에 찍는다는 느낌으로 당깁니다.", "반동을 심하게 쓰거나 어깨가 으쓱 올라간 상태로 당기는 실수"),
+        createExercise("등", "광배근", "친업", 4, "8~12회", "90초", "광배근 하부 및 이두 발달", "중급", "언더그립으로 잡고 수행합니다.", "손바닥이 내 얼굴을 향하게 잡고 가슴을 바에 닿게 당깁니다.", "팔이 다 펴지기 전에 반동으로 올라가는 실수"),
+        createExercise("등", "광배근", "스트레이트 암 풀다운", 3, "12~15회", "60초", "광배근 고립", "중급", "팔꿈치를 살짝 굽혀 고정합니다.", "바를 잡고 포물선을 그리며 허벅지 쪽으로 당겨줍니다.", "당길 때 팔꿈치가 접히면서 삼두 운동이 되는 실수"),
+        // 등 상/중/하부, 승모, 기립근 (핵심 위주)
+        createExercise("등", "등 상부", "와이드 시티드 로우", 4, "10~12회", "60초", "등 상부 두께 증가", "초급", "당길 때 상체가 너무 뒤로 넘어가지 않게 합니다.", "그립을 넓게 잡고 팔꿈치를 양옆으로 벌리며 명치 쪽으로 당깁니다.", "날개뼈를 접지 않고 팔만 뒤로 빼는 실수"),
+        createExercise("등", "등 중부", "바벨로우", 4, "8~12회", "90초", "등 전체 두께 증가", "고급", "허리에 통증이 오면 무게를 낮춥니다.", "상체를 45도 정도 숙이고 바벨을 배꼽 쪽으로 당깁니다.", "상체를 세우면서 승모근 힘으로 들어올리는 실수"),
+        createExercise("등", "등 하부", "클로즈그립 시티드로우", 4, "10~12회", "60초", "광배근 하부 발달", "초급", "배꼽 쪽으로 깊게 당겨줍니다.", "좁은 그립을 잡고 팔꿈치를 옆구리에 스치듯 당겨줍니다.", "허리를 앞뒤로 흔들며 반동으로 당기는 실수"),
+        createExercise("등", "승모근", "슈러그", 3, "12~15회", "60초", "상부 승모근 발달", "초급", "목을 앞으로 빼지 않습니다.", "덤벨이나 바벨을 들고 어깨를 귀 쪽으로 으쓱 올립니다.", "어깨를 올리면서 뒤로 돌려 관절에 무리를 주는 실수"),
+        createExercise("등", "척추기립근", "백익스텐션", 3, "15회", "60초", "코어 및 기립근 강화", "초급", "허리를 과도하게 뒤로 꺾지 않습니다.", "패드에 골반을 고정하고 척추를 바르게 편 상태로 상체를 숙였다 들어 올립니다.", "올라올 때 반동을 치며 허리를 활처럼 휘게 꺾는 실수")
+    ],
+    shoulder: [
+        createExercise("어깨", "전면 삼각근", "오버헤드프레스", 4, "8~12회", "90초", "전면 어깨 및 코어 발달", "중급", "허리가 과도하게 꺾이지 않게 엉덩이에 힘을 줍니다.", "바벨을 쇄골에 얹고 정수리 위로 수직으로 밀어올립니다.", "바벨이 얼굴을 피해 곡선으로 올라가는 실수"),
+        createExercise("어깨", "측면 삼각근", "덤벨 레터럴레이즈", 4, "15~20회", "60초", "어깨 넓이 증가", "초급", "승모근 개입을 최소화합니다.", "팔꿈치를 살짝 굽히고 양옆으로 멀리 던지듯 덤벨을 들어올립니다.", "어깨를 으쓱거리며 승모근으로 들어올리는 실수"),
+        createExercise("어깨", "후면 삼각근", "리어델트 플라이", 3, "15~20회", "60초", "입체적인 어깨 완성", "초급", "견갑(날개뼈)을 꽉 접지 않고 어깨 관절만 사용합니다.", "머신을 뒤로 앉아 손잡이를 잡고 양옆으로 벌려줍니다.", "등 근육(능형근)을 사용하여 날개뼈를 완전히 접어버리는 실수")
+    ],
+    arm: [
+        // 이두
+        createExercise("팔", "이두 장두", "해머컬", 3, "10~12회", "60초", "이두 바깥쪽 및 전완근 발달", "초급", "팔꿈치를 옆구리에 고정합니다.", "덤벨을 세로로 잡고 망치질하듯 그대로 들어올립니다.", "반동을 이용해 허리로 들어올리는 실수"),
+        createExercise("팔", "이두 단두", "EZ바 컬", 3, "10~12회", "60초", "이두 안쪽 발달 (봉우리)", "초급", "손목이 꺾이지 않게 꽉 쥡니다.", "EZ바를 잡고 이두근의 수축을 느끼며 말아 올립니다.", "내릴 때 힘을 풀고 확 떨어뜨리는 실수"),
+        // 삼두
+        createExercise("팔", "삼두 장두", "오버헤드 익스텐션", 3, "10~12회", "60초", "삼두 전체 볼륨 증가", "중급", "팔꿈치가 양옆으로 너무 벌어지지 않게 합니다.", "덤벨을 머리 뒤로 넘겼다가 삼두의 힘으로 위로 펴줍니다.", "허리가 과도하게 꺾이는 실수"),
+        createExercise("팔", "삼두 외측두", "케이블 푸시다운", 3, "12~15회", "60초", "삼두 선명도 발달", "초급", "팔꿈치를 고정하고 누릅니다.", "케이블 바를 잡고 바닥 쪽으로 삼두를 쥐어짜며 누릅니다.", "누를 때 상체의 체중을 실어 누르는 실수")
+    ],
+    legs: [
+        createExercise("하체", "대퇴사두근", "스쿼트", 4, "8~12회", "90초", "하체 전반 및 코어 발달", "중급", "무릎이 안쪽으로 모이지 않게 합니다.", "발을 어깨너비로 벌리고 엉덩이를 뒤로 빼며 무릎을 굽혀 앉았다 일어납니다.", "무릎이 발끝보다 과도하게 앞으로 튀어나오고 뒤꿈치가 뜨는 실수"),
+        createExercise("하체", "대퇴사두근", "레그익스텐션", 3, "12~15회", "60초", "허벅지 전면 분리도 향상", "초급", "엉덩이가 패드에서 뜨지 않게 손잡이를 꽉 잡습니다.", "발목 패드를 걸고 무릎을 펴면서 허벅지 앞쪽을 수축시킵니다.", "내릴 때 무게를 통제하지 않고 툭 떨어뜨리는 실수"),
+        createExercise("하체", "햄스트링", "레그컬", 3, "12~15회", "60초", "허벅지 후면 발달", "초급", "발목을 당긴 상태로 진행하면 자극이 더 좋습니다.", "엎드린 상태에서 패드를 엉덩이 쪽으로 접어 당깁니다.", "허리 반동을 튕기면서 골반이 패드에서 떨어지는 실수"),
+        createExercise("하체", "둔근", "힙쓰러스트", 4, "10~12회", "90초", "엉덩이 근육 집중 발달", "중급", "허리를 꺾어서 밀어올리지 않습니다.", "벤치에 등을 대고 골반 위에 바벨을 얹은 뒤 엉덩이 힘으로 들어 올립니다.", "목을 뒤로 젖히고 허리 힘으로 들어올리는 실수")
+    ],
+    abs: [
+        createExercise("복부", "상복부", "크런치", 3, "15~20회", "45초", "상복부 발달", "초급", "목을 꺾어 당기지 않습니다.", "바닥에 누워 무릎을 세우고 상체를 명치까지만 둥글게 말아 올립니다.", "손으로 뒤통수를 세게 잡아당겨 목에 무리를 주는 실수"),
+        createExercise("복부", "하복부", "레그레이즈", 3, "15~20회", "45초", "하복부 발달", "초급", "허리가 바닥에서 뜨지 않도록 주의합니다.", "누운 상태에서 다리를 곧게 펴고 복부의 힘으로 들어 올렸다 내립니다.", "다리를 내릴 때 허리가 붕 뜨면서 허리 통증을 유발하는 실수"),
+        createExercise("복부", "코어", "플랭크", 3, "60초 유지", "45초", "코어 전체 안정성 강화", "초급", "엉덩이가 너무 솟거나 처지지 않게 합니다.", "팔꿈치와 발끝으로 몸을 지탱하고 일직선을 유지하며 버팁니다.", "고개를 떨구거나 호흡을 참는 실수")
+    ]
+};
+
+/* ====================================
+   DOM 요소 참조 및 전역 상태
+   ==================================== */
+document.addEventListener("DOMContentLoaded", () => {
+    // 섹션 요소
+    const sectionInfo = document.getElementById("section-info");
+    const sectionDiagnostic = document.getElementById("section-diagnostic");
+    const sectionResult = document.getElementById("section-result");
+
+    // 버튼 요소
+    const btnNextToDiag = document.getElementById("btn-next-to-diag");
+    const btnPrevToInfo = document.getElementById("btn-prev-to-info");
+    const btnGenerate = document.getElementById("btn-generate");
+    const btnRegenDiet = document.getElementById("btn-regen-diet");
+    const btnRestart = document.getElementById("btn-restart");
+
+    // 입력 요소 - 신체 정보
+    const inputHeight = document.getElementById("height");
+    const inputWeight = document.getElementById("weight");
+    const inputAge = document.getElementById("age");
+
+    // 입력 요소 - 자가진단
+    const selectGoal = document.getElementById("goal");
+    const targetWeightContainer = document.getElementById("target-weight-container");
+    const inputTargetWeight = document.getElementById("target-weight");
+    const selectBodyType = document.getElementById("body-type");
+    const selectFrequency = document.getElementById("frequency");
+    const selectDuration = document.getElementById("duration");
+    const selectExperience = document.getElementById("experience");
+    const inputWeeks = document.getElementById("weeks");
+
+    // 계산 데이터 저장 변수
+    let currentUserData = {};
+
+    /* ====================================
+       1. 이벤트 리스너 설정
+       ==================================== */
+
+    // 운동 목적 변경에 따른 목표 체중 입력란 표시 여부
+    selectGoal.addEventListener("change", () => {
+        if (selectGoal.value === "diet" || selectGoal.value === "muscle") {
+            targetWeightContainer.classList.remove("hidden");
+        } else {
+            targetWeightContainer.classList.add("hidden");
+        }
+    });
+
+    // 섹션 1 -> 섹션 2 이동 (신체정보 검수)
+    btnNextToDiag.addEventListener("click", () => {
+        const height = parseFloat(inputHeight.value);
+        const weight = parseFloat(inputWeight.value);
+        const age = parseInt(inputAge.value);
+
+        if (!height || height <= 0 || !weight || weight <= 0 || !age || age <= 0) {
+            alert("키, 몸무게, 나이를 바르게 입력해주세요.");
+            return;
+        }
+
+        switchSection(sectionInfo, sectionDiagnostic);
+    });
+
+    // 섹션 2 -> 섹션 1 이동
+    btnPrevToInfo.addEventListener("click", () => {
+        switchSection(sectionDiagnostic, sectionInfo);
+    });
+
+    // 결과 생성 버튼 클릭
+    btnGenerate.addEventListener("click", () => {
+        const weeks = parseInt(inputWeeks.value);
+        if (!weeks || weeks <= 0) {
+            alert("프로그램 이용 기간을 올바르게 입력해주세요.");
+            return;
+        }
+
+        // 데이터 수집
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        const height = parseFloat(inputHeight.value);
+        const weight = parseFloat(inputWeight.value);
+        const age = parseInt(inputAge.value);
+        const goal = selectGoal.value;
+        const targetWeight = parseFloat(inputTargetWeight.value) || weight;
+        const bodyType = selectBodyType.value;
+        const frequency = selectFrequency.value;
+        const duration = selectDuration.value;
+        const experience = selectExperience.value;
+
+        currentUserData = {
+            gender, height, weight, age,
+            goal, targetWeight, bodyType,
+            frequency, duration, experience, weeks
+        };
+
+        // 결과 계산 및 화면 출력
+        generateResults(currentUserData);
+
+        // 화면 전환
+        switchSection(sectionDiagnostic, sectionResult);
+    });
+
+    // 식단 다시 뽑기 버튼
+    btnRegenDiet.addEventListener("click", () => {
+        if (currentUserData.recommendedCalories) {
+            renderDietPlan(currentUserData.recommendedCalories);
+        }
+    });
+
+    // 처음으로 돌아가기 버튼
+    btnRestart.addEventListener("click", () => {
+        document.getElementById("form-info").reset();
+        document.getElementById("form-diagnostic").reset();
+        targetWeightContainer.classList.remove("hidden");
+        
+        switchSection(sectionResult, sectionInfo);
+    });
+
+    /* ====================================
+       2. 화면 전환 헬퍼 함수
+       ==================================== */
+    function switchSection(fromSection, toSection) {
+        fromSection.classList.add("hidden");
+        fromSection.classList.remove("active");
+        
+        toSection.classList.remove("hidden");
+        toSection.classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    /* ====================================
+       3. 핵심 계산 및 결과 생성 함수
+       ==================================== */
+    function generateResults(data) {
+        // A. BMI 계산식: 몸무게 ÷ (키(m)²)
+        const heightM = data.height / 100;
+        const bmi = (data.weight / (heightM * heightM)).toFixed(1);
+        let bmiDesc = "";
+        
+        if (bmi < 18.5) bmiDesc = "저체중";
+        else if (bmi < 23) bmiDesc = "정상";
+        else if (bmi < 25) bmiDesc = "과체중";
+        else bmiDesc = "비만";
+
+        // B. BMR (기초대사량) 계산식
+        let bmr = 0;
+        if (data.gender === "male") {
+            bmr = 88.362 + (13.397 * data.weight) + (4.799 * data.height) - (5.677 * data.age);
+        } else {
+            bmr = 447.593 + (9.247 * data.weight) + (3.098 * data.height) - (4.330 * data.age);
+        }
+        bmr = Math.round(bmr);
+
+        // C. 활동량 및 목적에 따른 권장 하루 칼로리
+        let activityMultiplier = 1.375; // 주 2-3회 기준 기본 활동량
+        if (data.frequency === "4-5") activityMultiplier = 1.55;
+        if (data.frequency === "5+") activityMultiplier = 1.725;
+
+        const maintenanceCal = bmr * activityMultiplier;
+        let recommendedCalories = maintenanceCal;
+
+        if (data.goal === "diet") {
+            recommendedCalories = maintenanceCal - 400; // 약 300~500kcal 적게
+        } else if (data.goal === "muscle") {
+            recommendedCalories = maintenanceCal + 250; // 약 200~300kcal 높게
+        }
+        recommendedCalories = Math.round(recommendedCalories);
+        data.recommendedCalories = recommendedCalories;
+
+        // 화면 표출 - 신체 스탯
+        document.getElementById("res-bmi").textContent = bmi;
+        document.getElementById("res-bmi-desc").textContent = `(${bmiDesc})`;
+        document.getElementById("res-bmr").textContent = bmr.toLocaleString();
+        document.getElementById("res-cal").textContent = recommendedCalories.toLocaleString();
+
+        // D. 영양소 비율 계산 (탄수화물 : 단백질 : 지방)
+        calculateMacros(recommendedCalories, data.goal);
+
+        // E. 식단 추천 생성
+        renderDietPlan(recommendedCalories);
+
+        // F. 운동 프로그램 생성
+        renderWorkoutPlan(data);
+    }
+
+    /* ====================================
+       4. 영양소 비율 계산 및 표시
+       ==================================== */
+    function calculateMacros(calories, goal) {
+        let carbRatio = 0.5, proteinRatio = 0.3, fatRatio = 0.2;
+
+        if (goal === "diet") {
+            carbRatio = 0.4; proteinRatio = 0.35; fatRatio = 0.25;
+        } else if (goal === "muscle") {
+            carbRatio = 0.5; proteinRatio = 0.3; fatRatio = 0.2;
+        } else {
+            carbRatio = 0.5; proteinRatio = 0.25; fatRatio = 0.25;
+        }
+
+        // g당 칼로리: 탄 4kcal, 단 4kcal, 지 9kcal
+        const carbGrams = Math.round((calories * carbRatio) / 4);
+        const proteinGrams = Math.round((calories * proteinRatio) / 4);
+        const fatGrams = Math.round((calories * fatRatio) / 9);
+
+        // 프로그레스 바 적용
+        document.getElementById("bar-carbs").style.width = `${carbRatio * 100}%`;
+        document.getElementById("bar-carbs").textContent = `탄수화물 ${Math.round(carbRatio * 100)}%`;
+
+        document.getElementById("bar-protein").style.width = `${proteinRatio * 100}%`;
+        document.getElementById("bar-protein").textContent = `단백질 ${Math.round(proteinRatio * 100)}%`;
+
+        document.getElementById("bar-fat").style.width = `${fatRatio * 100}%`;
+        document.getElementById("bar-fat").textContent = `지방 ${Math.round(fatRatio * 100)}%`;
+
+        // 텍스트 표출
+        const macroText = document.getElementById("macro-text");
+        macroText.innerHTML = `
+            <span><strong>탄수화물:</strong> ${carbGrams}g</span>
+            <span><strong>단백질:</strong> ${proteinGrams}g</span>
+            <span><strong>지방:</strong> ${fatGrams}g</span>
+        `;
+    }
+
+    /* ====================================
+       5. 4끼 식단 랜덤 생성
+       ==================================== */
+    function getRandomItem(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function renderDietPlan(totalCal) {
+        const dietContainer = document.getElementById("diet-container");
+        dietContainer.innerHTML = "";
+
+        const meals = [
+            { name: "아침 🍳", cWeight: 0.25 },
+            { name: "점심 🍱", cWeight: 0.35 },
+            { name: "저녁 🥗", cWeight: 0.30 },
+            { name: "간식 🍌", cWeight: 0.10 }
+        ];
+
+        meals.forEach(meal => {
+            const mealCal = Math.round(totalCal * meal.cWeight);
+            const carb = getRandomItem(dietData.carbs);
+            const protein = getRandomItem(dietData.protein);
+            const veg = getRandomItem(dietData.vegetables);
+            const fat = getRandomItem(dietData.fats);
+
+            const mealCard = document.createElement("div");
+            mealCard.className = "diet-card";
+            mealCard.innerHTML = `
+                <h3>${meal.name} <span style="font-size: 0.9rem; color: var(--text-light);">(약 ${mealCal} kcal)</span></h3>
+                <div class="diet-item"><i class="fa-solid fa-bowl-rice" style="color:var(--carbs)"></i> <strong>탄수화물:</strong> ${carb}</div>
+                <div class="diet-item"><i class="fa-solid fa-egg" style="color:var(--protein)"></i> <strong>단백질:</strong> ${protein}</div>
+                <div class="diet-item"><i class="fa-solid fa-carrot" style="color:green"></i> <strong>채소:</strong> ${veg}</div>
+                <div class="diet-item"><i class="fa-solid fa-seedling" style="color:var(--fat)"></i> <strong>지방:</strong> ${fat}</div>
+            `;
+            dietContainer.appendChild(mealCard);
+        });
+    }
+
+    /* ====================================
+       6. 분할 운동 프로그램 생성 알고리즘
+       ==================================== */
+    function renderWorkoutPlan(data) {
+        const workoutContainer = document.getElementById("workout-container");
+        workoutContainer.innerHTML = "";
+
+        const splitTypeSpan = document.getElementById("res-split-type");
+        let splitDays = [];
+        let splitName = "";
+
+        // 운동 주간 횟수에 따른 자동 분할 로직
+        if (data.frequency === "2-3") {
+            splitName = "주 2~3회 무분할/상하체 루틴";
+            splitDays = [
+                { title: "Day 1: 전신 A", parts: ["chest", "back", "legs", "abs"] },
+                { title: "Day 2: 전신 B", parts: ["shoulder", "arm", "legs", "abs"] }
+            ];
+        } else if (data.frequency === "4-5") {
+            splitName = "주 4~5회 2분할 (Upper/Lower) 루틴";
+            splitDays = [
+                { title: "Day 1: 상체 (Upper A)", parts: ["chest", "back", "shoulder"] },
+                { title: "Day 2: 하체 및 코어 (Lower A)", parts: ["legs", "abs"] },
+                { title: "Day 3: 상체 (Upper B - 팔 집중)", parts: ["chest", "back", "arm"] },
+                { title: "Day 4: 하체 및 코어 (Lower B)", parts: ["legs", "abs"] }
+            ];
+        } else {
+            splitName = "주 5회 이상 3분할 (Push/Pull/Legs) 루틴";
+            splitDays = [
+                { title: "Day 1: 밀기 (Push - 가슴/어깨/삼두)", parts: ["chest", "shoulder"] },
+                { title: "Day 2: 당기기 (Pull - 등/이두)", parts: ["back", "arm"] },
+                { title: "Day 3: 하체 & 복근 (Legs & Abs)", parts: ["legs", "abs"] },
+                { title: "Day 4: 상체 통합 (Upper)", parts: ["chest", "back", "shoulder"] },
+                { title: "Day 5: 하체 & 팔 (Lower & Arms)", parts: ["legs", "arm"] }
+            ];
+        }
+
+        splitTypeSpan.textContent = splitName;
+
+        // 분할일자별 카드 렌더링
+        splitDays.forEach(day => {
+            const dayBox = document.createElement("div");
+            dayBox.className = "mt-4";
+            
+            let exercisesHTML = "";
+            let orderIdx = 1;
+
+            day.parts.forEach(partKey => {
+                const availableExercises = workoutData[partKey];
+                if (availableExercises && availableExercises.length > 0) {
+                    // 각 부위별로 1~2개 운동 무작위 추출
+                    const ex = getRandomItem(availableExercises);
+
+                    exercisesHTML += `
+                        <div class="workout-card mt-2">
+                            <h3>${orderIdx}. ${ex.name}</h3>
+                            <div class="workout-meta">
+                                <span><strong>부위:</strong> ${ex.part}</span> | 
+                                <span><strong>세부 근육:</strong> ${ex.subPart}</span> | 
+                                <span><strong>난이도:</strong> ${ex.difficulty}</span>
+                            </div>
+                            <div class="workout-details">
+                                <p><strong>세트 / 횟수:</strong> ${ex.sets}세트 × ${ex.reps}</p>
+                                <p><strong>휴식 시간:</strong> 세트 간 ${ex.rest}</p>
+                                <p><strong>운동 목적:</strong> ${ex.purpose}</p>
+                                <p><strong>운동 방법:</strong> ${ex.description}</p>
+                                <p style="color:#e11d48;"><strong>주의사항:</strong> ${ex.caution}</p>
+                                <p style="color:#d97706;"><strong>자주 하는 실수:</strong> ${ex.mistakes}</p>
+                            </div>
+                            <a href="${ex.youtube}" target="_blank" rel="noopener noreferrer" class="workout-link">
+                                <i class="fa-brands fa-youtube"></i> 유튜브 가이드 영상 보기
+                            </a>
+                        </div>
+                    `;
+                    orderIdx++;
+                }
+            });
+
+            dayBox.innerHTML = `
+                <h3 style="color:var(--primary); font-size:1.3rem; margin-bottom:0.5rem;">${day.title}</h3>
+                ${exercisesHTML}
+            `;
+            workoutContainer.appendChild(dayBox);
+        });
+    }
+});

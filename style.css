@@ -1,0 +1,327 @@
+/* ====================================
+   기본 설정 및 변수
+   ==================================== */
+:root {
+    --primary: #3b82f6;      /* 메인 파란색 */
+    --primary-hover: #2563eb;
+    --secondary: #e2e8f0;    /* 서브 회색 */
+    --secondary-hover: #cbd5e1;
+    --bg-color: #f1f5f9;     /* 전체 배경색 (밝은 회색) */
+    --card-bg: #ffffff;      /* 카드 배경색 */
+    --text-dark: #1e293b;    /* 기본 텍스트 */
+    --text-light: #64748b;   /* 보조 텍스트 */
+    --border: #e2e8f0;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    
+    /* 영양소 색상 */
+    --carbs: #60a5fa;   /* 탄수화물 - 파랑 */
+    --protein: #f472b6; /* 단백질 - 분홍 */
+    --fat: #fbbf24;     /* 지방 - 노랑 */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Pretendard', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+/* ====================================
+   타이포그래피 및 유틸리티
+   ==================================== */
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+    border-bottom: 2px solid var(--secondary);
+    padding-bottom: 0.5rem;
+}
+
+.mt-2 { margin-top: 1rem; }
+.mt-4 { margin-top: 2rem; }
+.text-center { text-align: center; }
+.hidden { display: none !important; }
+
+/* ====================================
+   레이아웃 및 헤더
+   ==================================== */
+.header {
+    background: var(--primary);
+    color: white;
+    text-align: center;
+    padding: 2rem 1rem;
+    box-shadow: var(--shadow);
+}
+
+.header .logo {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.header .subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+/* ====================================
+   카드 UI 및 애니메이션
+   ==================================== */
+.card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+    
+    /* 부드러운 등장 애니메이션 */
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s forwards ease-out;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ====================================
+   폼 (입력) 요소
+   ==================================== */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.sub-label {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+input[type="number"], select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* 라디오 버튼 (성별 선택) */
+.radio-group {
+    display: flex;
+    gap: 1rem;
+}
+
+.radio-group input[type="radio"] {
+    display: none;
+}
+
+.radio-label {
+    flex: 1;
+    text-align: center;
+    padding: 0.75rem;
+    background: var(--secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.radio-group input[type="radio"]:checked + .radio-label {
+    background: var(--primary);
+    color: white;
+    font-weight: bold;
+}
+
+/* ====================================
+   버튼
+   ==================================== */
+.btn {
+    display: inline-block;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+.btn-secondary {
+    background: var(--secondary);
+    color: var(--text-dark);
+}
+
+.btn-secondary:hover { background: var(--secondary-hover); transform: translateY(-2px); }
+
+.btn-small {
+    width: auto;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.btn-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* ====================================
+   결과 화면 (대시보드) - 통계 그리드
+   ==================================== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.stat-box {
+    background: var(--bg-color);
+    padding: 1.5rem 1rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+
+.stat-box.highlight {
+    background: #eff6ff; /* 아주 옅은 파란색 */
+    border-color: #bfdbfe;
+}
+
+.stat-title {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.stat-desc {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+/* ====================================
+   결과 화면 - 영양소 비율 바
+   ==================================== */
+.macro-bar {
+    display: flex;
+    height: 30px;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.macro-bar .bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    transition: width 0.5s ease-in-out;
+}
+
+.bar.carbs { background-color: var(--carbs); }
+.bar.protein { background-color: var(--protein); }
+.bar.fat { background-color: var(--fat); }
+
+.macro-text-group {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+/* ====================================
+   결과 화면 - 식단 및 운동 그리드
+   ==================================== */
+.diet-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.diet-card, .workout-card {
+    background: var(--bg-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+}
+
+.diet-card h3 {
+    margin-bottom: 1rem;
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.diet-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.workout-card {
+    margin-bottom: 1rem;
+}
+.workout-card h3 { color: var(--text-dark); margin-bottom: 0.5rem; font-size: 1.2rem;}
+.workout-meta { font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem; }
+.workout-details p { margin-bottom: 0.3rem; }
+.workout-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: red;
+    text-decoration: none;
+    font-weight: bold;
+}
+.workout-link:hover { text-decoration: underline; }
+
+/* ====================================
+   반응형 (모바일)
+   ==================================== */
+@media (max-width: 768px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .diet-grid { grid-template-columns: 1fr; }
+    .btn-group { flex-direction: column; }
+}

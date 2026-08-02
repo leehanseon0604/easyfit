@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Fit | 청소년 맞춤형 건강관리</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <i class="fa-solid fa-running"></i> Easy Fit
+        </div>
+        <p class="subtitle">나만을 위한 스마트한 운동 & 식단 솔루션</p>
+        
+        <!-- 🔥 추가된 부분: 로그인 버튼 및 상태 표시 -->
+        <div class="auth-section" style="margin-top: 15px;">
+            <button type="button" class="btn btn-primary" id="anonLoginBtn" style="padding: 5px 15px; font-size: 0.9em;">
+                익명으로 시작하기
+            </button>
+            <span id="status" style="margin-left: 10px; font-size: 0.9em; color: #666;">
+                현재 상태: 로그아웃 됨
+            </span>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <section id="section-info" class="card active">
+            <h2><i class="fa-solid fa-ruler-combined"></i> 신체 정보 입력</h2>
+            <form id="form-info">
+                <div class="form-group">
+                    <label for="height">키 (cm)</label>
+                    <input type="number" id="height" required placeholder="예: 170">
+                </div>
+                <div class="form-group">
+                    <label for="weight">몸무게 (kg)</label>
+                    <input type="number" id="weight" required placeholder="예: 65">
+                </div>
+                <div class="form-group">
+                    <label for="age">나이</label>
+                    <input type="number" id="age" required placeholder="예: 17">
+                </div>
+                <div class="form-group">
+                    <label>성별</label>
+                    <div class="radio-group">
+                        <input type="radio" id="male" name="gender" value="male" checked>
+                        <label for="male" class="radio-label">남자</label>
+                        <input type="radio" id="female" name="gender" value="female">
+                        <label for="female" class="radio-label">여자</label>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" id="btn-next-to-diag">다음 단계로 <i class="fa-solid fa-arrow-right"></i></button>
+            </form>
+        </section>
+
+        <section id="section-diagnostic" class="card hidden">
+            <h2><i class="fa-solid fa-clipboard-list"></i> 자가진단</h2>
+            <form id="form-diagnostic">
+                
+                <div class="form-group">
+                    <label>1. 운동 목적</label>
+                    <select id="goal" required>
+                        <option value="diet">다이어트</option>
+                        <option value="muscle">근육량 증가</option>
+                        <option value="health">건강 유지</option>
+                    </select>
+                    <div id="target-weight-container" class="mt-2">
+                        <label for="target-weight" class="sub-label">목표 체중 (kg)</label>
+                        <input type="number" id="target-weight" placeholder="예: 60">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>2. 현재 체형</label>
+                    <select id="body-type" required>
+                        <option value="obese">비만</option>
+                        <option value="skinny-fat">마른 비만</option>
+                        <option value="normal">정상</option>
+                        <option value="underweight">저체중</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>3. 주 운동 가능 횟수</label>
+                    <select id="frequency" required>
+                        <option value="2-3">주 2~3회</option>
+                        <option value="4-5">주 4~5회</option>
+                        <option value="5+">주 5회 이상</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>4. 희망 운동 시간</label>
+                    <select id="duration" required>
+                        <option value="<30">30분 이하</option>
+                        <option value="30-60">30분~1시간</option>
+                        <option value=">60">1시간 이상</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>5. 운동 경험</label>
+                    <select id="experience" required>
+                        <option value="beginner">초급</option>
+                        <option value="intermediate">중급</option>
+                        <option value="advanced">고급</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="weeks">6. 프로그램 이용 기간 (주)</label>
+                    <input type="number" id="weeks" required placeholder="예: 4">
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" id="btn-prev-to-info"><i class="fa-solid fa-arrow-left"></i> 이전</button>
+                    <button type="button" class="btn btn-primary" id="btn-generate">결과 생성 <i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                </div>
+            </form>
+        </section>
+
+        <section id="section-result" class="hidden">
+            
+            <div class="card result-card">
+                <h2><i class="fa-solid fa-chart-pie"></i> 나의 신체 및 필요 칼로리</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-title">BMI</span>
+                        <span class="stat-value" id="res-bmi">-</span>
+                        <span class="stat-desc" id="res-bmi-desc">-</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-title">기초대사량 (BMR)</span>
+                        <span class="stat-value" id="res-bmr">-</span>
+                        <span class="stat-desc">kcal</span>
+                    </div>
+                    <div class="stat-box highlight">
+                        <span class="stat-title">권장 하루 섭취량</span>
+                        <span class="stat-value" id="res-cal">-</span>
+                        <span class="stat-desc">kcal</span>
+                    </div>
+                </div>
+                
+                <div class="macro-ratios mt-4">
+                    <h3>권장 영양소 비율</h3>
+                    <div class="macro-bar">
+                        <div id="bar-carbs" class="bar carbs">탄수화물</div>
+                        <div id="bar-protein" class="bar protein">단백질</div>
+                        <div id="bar-fat" class="bar fat">지방</div>
+                    </div>
+                    <div class="macro-text-group" id="macro-text">
+                        </div>
+                </div>
+            </div>
+
+            <div class="card result-card mt-4">
+                <h2><i class="fa-solid fa-utensils"></i> 맞춤형 하루 식단 추천</h2>
+                <button type="button" class="btn btn-small" id="btn-regen-diet"><i class="fa-solid fa-rotate"></i> 식단 다시 뽑기</button>
+                <div class="diet-grid mt-2" id="diet-container">
+                    </div>
+            </div>
+
+            <div class="card result-card mt-4">
+                <h2><i class="fa-solid fa-dumbbell"></i> 맞춤형 운동 프로그램 (<span id="res-split-type"></span>)</h2>
+                <div id="workout-container">
+                    </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button type="button" class="btn btn-secondary" id="btn-restart"><i class="fa-solid fa-rotate-left"></i> 처음부터 다시하기</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+    <!-- 🔥 추가된 부분: 파이어베이스 로그인 스크립트 (반드시 </body> 바로 위에 배치) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // ★★★ 본인의 Firebase 설정값으로 반드시 교체하세요! ★★★
+	const firebaseConfig = {
+  	  apiKey: "AIzaSyCboscZTe1jNvwcFN_xP6PXp_DDGe23-l4",
+  	  authDomain: "easyfit-d1c3f.firebaseapp.com",
+  	  projectId: "easyfit-d1c3f",
+  	  storageBucket: "easyfit-d1c3f.firebasestorage.app",
+  	  messagingSenderId: "716822981492",
+  	  appId: "1:716822981492:web:cbf983649af704a21c1a21",
+  	  measurementId: "G-6Y2TJ0BWFP"
+	};
+
+        // 파이어베이스 초기화
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const loginBtn = document.getElementById('anonLoginBtn');
+        const statusText = document.getElementById('status');
+
+        // 익명 로그인 버튼 클릭 이벤트
+        loginBtn.addEventListener('click', () => {
+            signInAnonymously(auth)
+                .then(() => {
+                    alert("익명 로그인에 성공했습니다!");
+                })
+                .catch((error) => {
+                    console.error("로그인 에러:", error);
+                    alert("로그인 실패: " + error.message);
+                });
+        });
+
+        // 로그인 상태 실시간 감지
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // 로그인 완료 시 버튼 숨기고 상태 텍스트 변경
+                loginBtn.style.display = 'none';
+                statusText.innerText = "환영합니다! (고유 ID: " + user.uid.substring(0, 6) + "...)";
+                statusText.style.color = "#2e7d32"; // 초록색으로 변경
+            } else {
+                // 로그아웃 상태 시 버튼 다시 보이기
+                loginBtn.style.display = 'inline-block';
+                statusText.innerText = "현재 상태: 로그아웃 됨";
+                statusText.style.color = "#666";
+            }
+        });
+    </script>
+</body>
+</html>
