@@ -152,6 +152,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const dailyCheckDate = document.getElementById("daily-check-date");
     const dailyCheckStatus = document.getElementById("daily-check-status");
     const dailyCheckInputs = [...document.querySelectorAll('#daily-checklist input[type="checkbox"]')];
+    const calendarTitle = document.getElementById("calendar-title");
+    const calendarGrid = document.getElementById("calendar-grid");
+    const totalPoints = document.getElementById("total-points");
+    const btnCalendarPrev = document.getElementById("calendar-prev");
+    const btnCalendarNext = document.getElementById("calendar-next");
 
     // 입력 요소 - 신체 정보
     const inputHeight = document.getElementById("height");
@@ -171,6 +176,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // 계산 데이터 저장 변수
     let currentUserData = {};
     let activeUserId = window.easyFitAuthUserId || null;
+    let calendarViewDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const dailyCheckItemIds = ["breakfast", "lunch", "dinner", "snack", "workout"];
 
     const storageKey = (uid) => `easyfit-saved-plan:${uid}`;
     const localDateKey = () => {
@@ -182,14 +189,68 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     const dailyCheckKey = (uid) => `easyfit-daily-check:${uid}:${localDateKey()}`;
 
+    function getCompletedDates(uid) {
+        const completedDates = new Set();
+        if (!uid) return completedDates;
+        const prefix = `easyfit-daily-check:${uid}:`;
+
+        for (let index = 0; index < localStorage.length; index++) {
+            const key = localStorage.key(index);
+            if (!key?.startsWith(prefix)) continue;
+            try {
+                const record = JSON.parse(localStorage.getItem(key));
+                if (dailyCheckItemIds.every(itemId => Boolean(record.items?.[itemId]))) {
+                    completedDates.add(key.slice(prefix.length));
+                }
+            } catch (error) {
+                console.error("캘린더 기록 확인 오류:", error);
+            }
+        }
+        return completedDates;
+    }
+
+    function renderCalendar(uid) {
+        const year = calendarViewDate.getFullYear();
+        const month = calendarViewDate.getMonth();
+        const completedDates = getCompletedDates(uid);
+        const firstWeekday = new Date(year, month, 1).getDay();
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+
+        calendarTitle.textContent = `${year}년 ${month + 1}월`;
+        totalPoints.textContent = `${(completedDates.size * 100).toLocaleString()} P`;
+        calendarGrid.innerHTML = weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join("");
+
+        for (let blank = 0; blank < firstWeekday; blank++) {
+            calendarGrid.insertAdjacentHTML("beforeend", '<div class="calendar-day empty" aria-hidden="true"></div>');
+        }
+
+        for (let day = 1; day <= lastDay; day++) {
+            const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const isToday = dateKey === localDateKey();
+            const isCompleted = completedDates.has(dateKey);
+            const classes = ["calendar-day", isToday ? "today" : "", isCompleted ? "completed" : ""].filter(Boolean).join(" ");
+            calendarGrid.insertAdjacentHTML("beforeend", `
+                <div class="${classes}" title="${isCompleted ? "체크리스트 완료 · 100포인트 획득" : ""}">
+                    <span>${day}</span>
+                    ${isCompleted ? '<i class="fa-solid fa-check"></i>' : ""}
+                </div>`);
+        }
+    }
+
     function updateDailyCheckButton() {
-        const hasSelection = dailyCheckInputs.some(input => input.checked);
+        const completedCount = dailyCheckInputs.filter(input => input.checked).length;
+        const allCompleted = completedCount === dailyCheckInputs.length;
         const isLocked = dailyCheckInputs.some(input => input.disabled);
-        btnSaveDailyCheck.disabled = !activeUserId || !hasSelection || isLocked;
+        btnSaveDailyCheck.disabled = !activeUserId || !allCompleted || isLocked;
+        if (activeUserId && !isLocked) {
+            dailyCheckStatus.textContent = `${completedCount}/${dailyCheckInputs.length}개 완료 · 모두 체크하면 100포인트를 받을 수 있습니다.`;
+        }
     }
 
     function loadDailyChecklist(uid) {
         dailyCheckDate.textContent = new Intl.DateTimeFormat("ko-KR", { dateStyle: "full" }).format(new Date());
+        renderCalendar(uid);
         dailyCheckInputs.forEach(input => {
             input.checked = false;
             input.disabled = !uid;
@@ -210,14 +271,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     input.disabled = true;
                 });
                 const completedCount = dailyCheckInputs.filter(input => input.checked).length;
-                dailyCheckStatus.textContent = `오늘 기록 완료 · ${completedCount}/${dailyCheckInputs.length}개 실천`;
-                btnSaveDailyCheck.textContent = "오늘 기록 완료";
+                const earnedPoints = completedCount === dailyCheckInputs.length ? 100 : 0;
+                dailyCheckStatus.textContent = `오늘 기록 완료 · ${completedCount}/${dailyCheckInputs.length}개 실천 · +${earnedPoints} P`;
+                btnSaveDailyCheck.textContent = earnedPoints ? "오늘 완료 · 100 P 획득" : "오늘 기록 완료";
             } catch (error) {
                 console.error("오늘의 체크리스트 복원 오류:", error);
                 localStorage.removeItem(dailyCheckKey(uid));
             }
         } else {
-            dailyCheckStatus.textContent = "완료한 항목을 선택한 뒤 저장해 주세요. 저장은 하루 한 번만 가능합니다.";
+            dailyCheckStatus.textContent = "5개 항목을 모두 완료하면 오늘 기록과 100포인트를 저장할 수 있습니다.";
             btnSaveDailyCheck.textContent = "오늘 기록 저장하기";
         }
         updateDailyCheckButton();
@@ -225,11 +287,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function saveDailyChecklist() {
         if (!activeUserId || localStorage.getItem(dailyCheckKey(activeUserId))) return;
+        if (!dailyCheckInputs.every(input => input.checked)) return;
 
         const items = Object.fromEntries(dailyCheckInputs.map(input => [input.value, input.checked]));
         localStorage.setItem(dailyCheckKey(activeUserId), JSON.stringify({
             date: localDateKey(),
             savedAt: new Date().toISOString(),
+            points: 100,
             items
         }));
         loadDailyChecklist(activeUserId);
@@ -338,6 +402,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     dailyCheckInputs.forEach(input => input.addEventListener("change", updateDailyCheckButton));
     btnSaveDailyCheck.addEventListener("click", saveDailyChecklist);
+    btnCalendarPrev.addEventListener("click", () => {
+        calendarViewDate = new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() - 1, 1);
+        renderCalendar(activeUserId);
+    });
+    btnCalendarNext.addEventListener("click", () => {
+        calendarViewDate = new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1);
+        renderCalendar(activeUserId);
+    });
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") loadDailyChecklist(activeUserId);
     });

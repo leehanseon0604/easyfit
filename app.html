@@ -175,6 +175,23 @@
                 <p class="checkin-status" id="daily-check-status" aria-live="polite">완료한 항목을 선택해 주세요.</p>
             </div>
 
+            <div class="card result-card mt-4 calendar-card">
+                <div class="calendar-header">
+                    <div>
+                        <span class="calendar-kicker">MY CONSISTENCY</span>
+                        <h2><i class="fa-solid fa-calendar-days"></i> 실천 캘린더</h2>
+                    </div>
+                    <div class="points-total"><i class="fa-solid fa-star"></i><span>누적 포인트</span><strong id="total-points">0 P</strong></div>
+                </div>
+                <div class="calendar-toolbar">
+                    <button type="button" id="calendar-prev" aria-label="이전 달"><i class="fa-solid fa-chevron-left"></i></button>
+                    <strong id="calendar-title"></strong>
+                    <button type="button" id="calendar-next" aria-label="다음 달"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid" aria-label="월간 실천 캘린더"></div>
+                <div class="calendar-legend"><span><i></i> 체크리스트 전체 완료</span><strong>하루 완료 시 +100 P</strong></div>
+            </div>
+
             <div class="card result-card mt-4">
                 <h2><i class="fa-solid fa-utensils"></i> 맞춤형 하루 식단 추천</h2>
                 <button type="button" class="btn btn-small" id="btn-regen-diet"><i class="fa-solid fa-rotate"></i> 식단 다시 뽑기</button>

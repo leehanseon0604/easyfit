@@ -302,6 +302,40 @@ input[type="number"]:focus, select:focus {
 .checkin-status { margin-top: 0.7rem; color: var(--text-light); text-align: center; font-size: 0.85rem; }
 
 /* ====================================
+   실천 캘린더와 포인트
+   ==================================== */
+.calendar-header, .calendar-toolbar, .calendar-legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.calendar-header h2 { margin: 0.2rem 0 0; border: 0; padding: 0; }
+.calendar-kicker { color: var(--text-light); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; }
+.points-total { display: grid; grid-template-columns: auto auto; align-items: center; gap: 0.1rem 0.5rem; padding: 0.8rem 1rem; border-radius: 12px; background: #eff6ff; color: var(--primary); }
+.points-total i { grid-row: 1 / 3; font-size: 1.25rem; }
+.points-total span { color: var(--text-light); font-size: 0.72rem; }
+.points-total strong { font-size: 1.15rem; }
+
+.calendar-toolbar { margin: 1.5rem 0 1rem; }
+.calendar-toolbar button { width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 50%; background: white; color: var(--text-dark); cursor: pointer; }
+.calendar-toolbar button:hover { border-color: var(--primary); color: var(--primary); }
+.calendar-toolbar strong { font-size: 1.1rem; }
+
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.45rem; }
+.calendar-weekday { padding: 0.35rem; color: var(--text-light); text-align: center; font-size: 0.75rem; font-weight: 700; }
+.calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-color); color: var(--text-light); font-size: 0.85rem; }
+.calendar-day.empty { border-color: transparent; background: transparent; }
+.calendar-day.today { border-color: var(--primary); color: var(--primary); font-weight: 800; }
+.calendar-day.completed { border-color: var(--primary); background: var(--primary); color: white; font-weight: 800; box-shadow: 0 5px 12px rgba(59, 130, 246, 0.2); }
+.calendar-day.completed i { font-size: 0.65rem; }
+.calendar-legend { margin-top: 1rem; color: var(--text-light); font-size: 0.78rem; }
+.calendar-legend span { display: flex; align-items: center; gap: 0.4rem; }
+.calendar-legend span i { width: 10px; height: 10px; border-radius: 3px; background: var(--primary); }
+.calendar-legend strong { color: var(--primary); }
+
+/* ====================================
    결과 화면 - 영양소 비율 바
    ==================================== */
 .macro-bar {
@@ -473,6 +507,10 @@ input[type="number"]:focus, select:focus {
 @media (max-width: 768px) {
     .stats-grid { grid-template-columns: 1fr; }
     .daily-checklist { grid-template-columns: repeat(2, 1fr); }
+    .calendar-header { align-items: flex-start; }
+    .calendar-grid { gap: 0.25rem; }
+    .calendar-day { border-radius: 6px; font-size: 0.75rem; }
+    .calendar-legend { align-items: flex-start; flex-direction: column; }
     .diet-grid { grid-template-columns: 1fr; }
     .diet-summary { grid-template-columns: 1fr; }
     .food-heading { flex-wrap: wrap; }
