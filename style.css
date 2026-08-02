@@ -554,6 +554,69 @@ input[type="number"]:focus, select:focus {
 .workout-card {
     margin-bottom: 1rem;
 }
+.workout-day-page {
+    margin: 1.25rem 0;
+}
+.workout-day-page[hidden] {
+    display: none;
+}
+.workout-pagination {
+    display: grid;
+    grid-template-columns: minmax(105px, 1fr) auto minmax(105px, 1fr);
+    align-items: center;
+    gap: 1rem;
+    margin: 1.25rem 0;
+    padding: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--primary) 28%, white);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--primary) 8%, white);
+}
+.workout-page-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 44px;
+    padding: 0.65rem 1rem;
+    border: 0;
+    border-radius: 9px;
+    background: var(--primary);
+    color: var(--theme-contrast);
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+}
+.workout-page-button:last-child {
+    justify-self: end;
+}
+.workout-page-button:first-child {
+    justify-self: start;
+}
+.workout-page-button:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+.workout-page-button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+.workout-page-indicator {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    min-width: 72px;
+    color: var(--text-light);
+    line-height: 1.15;
+}
+.workout-page-indicator strong {
+    color: var(--primary);
+    font-size: 1rem;
+}
+.workout-page-indicator span {
+    margin-top: 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
 .workout-day-heading {
     display: flex;
     align-items: center;
@@ -595,6 +658,9 @@ input[type="number"]:focus, select:focus {
     .food-role { width: 100%; }
     .food-nutrition { grid-template-columns: repeat(2, 1fr); }
     .workout-day-heading { align-items: flex-start; flex-direction: column; }
+    .workout-pagination { grid-template-columns: 1fr auto 1fr; gap: 0.5rem; padding: 0.6rem; }
+    .workout-page-button { min-width: 44px; padding: 0.65rem; }
+    .workout-page-button span { display: none; }
     .btn-group { flex-direction: column; }
 }
 

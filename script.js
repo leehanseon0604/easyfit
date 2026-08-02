@@ -163,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const themeConcept = document.getElementById("theme-concept");
     const btnCalendarPrev = document.getElementById("calendar-prev");
     const btnCalendarNext = document.getElementById("calendar-next");
+    const workoutContainer = document.getElementById("workout-container");
     const dashboardNavButtons = [...document.querySelectorAll("[data-dashboard-page]")];
     const dashboardPages = [...document.querySelectorAll("[data-page]")];
 
@@ -416,7 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!activeUserId || !currentUserData.recommendedCalories) return;
 
         const savedPlan = {
-            version: 5,
+            version: 6,
             savedAt: new Date().toISOString(),
             userData: currentUserData,
             result: {
@@ -468,7 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
             currentUserData = savedPlan.userData;
             fillSavedInputs(currentUserData);
 
-            if (savedPlan.version !== 5) {
+            if (savedPlan.version !== 6) {
                 generateResults(currentUserData);
                 sectionInfo.classList.add("hidden");
                 sectionDiagnostic.classList.add("hidden");
@@ -492,7 +493,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("macro-text").innerHTML = result.macroHtml;
             document.getElementById("diet-container").innerHTML = result.dietHtml;
             document.getElementById("res-split-type").textContent = result.splitType;
-            document.getElementById("workout-container").innerHTML = result.workoutHtml;
+            workoutContainer.innerHTML = result.workoutHtml;
+            showWorkoutDay(0);
 
             sectionInfo.classList.add("hidden");
             sectionDiagnostic.classList.add("hidden");
@@ -522,6 +524,12 @@ document.addEventListener("DOMContentLoaded", () => {
     btnCalendarNext.addEventListener("click", () => {
         calendarViewDate = new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1);
         renderCalendar(activeUserId);
+    });
+    workoutContainer.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-workout-direction]");
+        if (!button || button.disabled) return;
+        const currentDay = Number(workoutContainer.dataset.activeWorkoutDay) || 0;
+        showWorkoutDay(currentDay + Number(button.dataset.workoutDirection), true);
     });
     dashboardNavButtons.forEach(button => {
         button.addEventListener("click", () => showDashboardPage(button.dataset.dashboardPage));
@@ -899,8 +907,49 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ====================================
        6. 분할 운동 프로그램 생성 알고리즘
        ==================================== */
+    function showWorkoutDay(dayIndex, shouldScroll = false) {
+        const dayPages = [...workoutContainer.querySelectorAll(".workout-day-page")];
+        if (dayPages.length === 0) return;
+
+        const safeIndex = Math.max(0, Math.min(dayIndex, dayPages.length - 1));
+        workoutContainer.dataset.activeWorkoutDay = String(safeIndex);
+        dayPages.forEach((page, index) => {
+            const isActive = index === safeIndex;
+            page.hidden = !isActive;
+            page.classList.toggle("active", isActive);
+            page.setAttribute("aria-hidden", String(!isActive));
+        });
+
+        workoutContainer.querySelectorAll(".workout-page-indicator").forEach(indicator => {
+            indicator.innerHTML = `<strong>DAY ${safeIndex + 1}</strong><span>${safeIndex + 1} / ${dayPages.length}</span>`;
+        });
+        workoutContainer.querySelectorAll('[data-workout-direction="-1"]').forEach(button => {
+            button.disabled = safeIndex === 0;
+        });
+        workoutContainer.querySelectorAll('[data-workout-direction="1"]').forEach(button => {
+            button.disabled = safeIndex === dayPages.length - 1;
+        });
+
+        if (shouldScroll) {
+            workoutContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }
+
+    function createWorkoutPagination() {
+        return `
+            <nav class="workout-pagination" aria-label="운동 프로그램 날짜 이동">
+                <button type="button" class="workout-page-button" data-workout-direction="-1" aria-label="이전 운동일 보기">
+                    <i class="fa-solid fa-chevron-left"></i><span>이전 DAY</span>
+                </button>
+                <div class="workout-page-indicator" aria-live="polite"></div>
+                <button type="button" class="workout-page-button" data-workout-direction="1" aria-label="다음 운동일 보기">
+                    <span>다음 DAY</span><i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </nav>
+        `;
+    }
+
     function renderWorkoutPlan(data) {
-        const workoutContainer = document.getElementById("workout-container");
         workoutContainer.innerHTML = "";
 
         const splitTypeSpan = document.getElementById("res-split-type");
@@ -966,10 +1015,14 @@ document.addEventListener("DOMContentLoaded", () => {
             return selected;
         };
 
-        // 분할일자별 카드 렌더링
-        splitDays.forEach(day => {
+        workoutContainer.insertAdjacentHTML("beforeend", createWorkoutPagination());
+
+        // 분할일자별 페이지 렌더링
+        splitDays.forEach((day, dayIndex) => {
             const dayBox = document.createElement("div");
-            dayBox.className = "mt-4";
+            dayBox.className = "workout-day-page";
+            dayBox.dataset.workoutDay = String(dayIndex);
+            dayBox.hidden = dayIndex !== 0;
             const selectedExercises = selectExercisesForDay(day.parts, durationPlan.exerciseCount);
 
             const exercisesHTML = selectedExercises.map((ex, index) => `
@@ -1003,5 +1056,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             workoutContainer.appendChild(dayBox);
         });
+        workoutContainer.insertAdjacentHTML("beforeend", createWorkoutPagination());
+        showWorkoutDay(0);
     }
 });
