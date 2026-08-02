@@ -3,19 +3,43 @@
    ==================================== */
 const dietData = {
     carbs: [
-        "현미밥", "귀리밥", "잡곡밥", "흑미밥", "찰보리밥", "곤약밥", 
-        "오트밀", "통밀빵", "통밀파스타", "메밀면", "고구마", "감자", "단호박", "옥수수"
+        { name: "현미밥", kcal: 153, carbs: 32.1, protein: 2.9, fat: 1.0 },
+        { name: "귀리밥", kcal: 160, carbs: 31.0, protein: 4.5, fat: 2.0 },
+        { name: "잡곡밥", kcal: 150, carbs: 31.0, protein: 3.4, fat: 1.0 },
+        { name: "오트밀", kcal: 389, carbs: 66.3, protein: 16.9, fat: 6.9 },
+        { name: "통밀빵", kcal: 247, carbs: 41.0, protein: 13.0, fat: 4.2 },
+        { name: "고구마", kcal: 130, carbs: 30.0, protein: 1.4, fat: 0.2 },
+        { name: "감자", kcal: 77, carbs: 17.0, protein: 2.0, fat: 0.1 },
+        { name: "옥수수", kcal: 96, carbs: 21.0, protein: 3.4, fat: 1.5 }
     ],
     protein: [
-        "닭가슴살", "닭안심", "닭다리살(껍질 제거)", "훈제오리", "돼지 안심", "등심", 
-        "앞다리살", "우둔살", "홍두깨살", "부채살", "연어", "고등어", "참치", "두부", "계란", "그릭요거트"
+        { name: "닭가슴살", kcal: 165, carbs: 0, protein: 31.0, fat: 3.6 },
+        { name: "닭안심", kcal: 110, carbs: 0, protein: 24.0, fat: 1.2 },
+        { name: "돼지 안심", kcal: 143, carbs: 0, protein: 26.0, fat: 3.5 },
+        { name: "소고기 우둔살", kcal: 170, carbs: 0, protein: 29.0, fat: 5.0 },
+        { name: "연어", kcal: 208, carbs: 0, protein: 20.0, fat: 13.0 },
+        { name: "참치", kcal: 116, carbs: 0, protein: 26.0, fat: 0.8 },
+        { name: "두부", kcal: 80, carbs: 1.9, protein: 8.5, fat: 4.2 },
+        { name: "그릭요거트", kcal: 97, carbs: 3.9, protein: 9.0, fat: 5.0 }
     ],
     vegetables: [
-        "양상추", "상추", "오이", "파프리카", "당근", "방울토마토", "시금치", 
-        "케일", "양배추", "버섯", "미역", "김"
+        { name: "양상추", kcal: 15, carbs: 2.9, protein: 1.4, fat: 0.2 },
+        { name: "오이", kcal: 15, carbs: 3.6, protein: 0.7, fat: 0.1 },
+        { name: "파프리카", kcal: 31, carbs: 6.0, protein: 1.0, fat: 0.3 },
+        { name: "당근", kcal: 41, carbs: 9.6, protein: 0.9, fat: 0.2 },
+        { name: "방울토마토", kcal: 18, carbs: 3.9, protein: 0.9, fat: 0.2 },
+        { name: "시금치", kcal: 23, carbs: 3.6, protein: 2.9, fat: 0.4 },
+        { name: "양배추", kcal: 25, carbs: 5.8, protein: 1.3, fat: 0.1 },
+        { name: "버섯", kcal: 22, carbs: 3.3, protein: 3.1, fat: 0.3 }
     ],
     fats: [
-        "아몬드", "호두", "피칸", "캐슈넛", "아보카도", "올리브유", "들기름", "참기름"
+        { name: "아몬드", kcal: 579, carbs: 21.6, protein: 21.2, fat: 49.9 },
+        { name: "호두", kcal: 654, carbs: 13.7, protein: 15.2, fat: 65.2 },
+        { name: "캐슈넛", kcal: 553, carbs: 30.2, protein: 18.2, fat: 43.8 },
+        { name: "아보카도", kcal: 160, carbs: 8.5, protein: 2.0, fat: 14.7 },
+        { name: "올리브유", kcal: 884, carbs: 0, protein: 0, fat: 100 },
+        { name: "들기름", kcal: 884, carbs: 0, protein: 0, fat: 100 },
+        { name: "참기름", kcal: 884, carbs: 0, protein: 0, fat: 100 }
     ]
 };
 
@@ -141,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!activeUserId || !currentUserData.recommendedCalories) return;
 
         const savedPlan = {
-            version: 1,
+            version: 2,
             savedAt: new Date().toISOString(),
             userData: currentUserData,
             result: {
@@ -192,6 +216,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             currentUserData = savedPlan.userData;
             fillSavedInputs(currentUserData);
+
+            if (savedPlan.version !== 2) {
+                generateResults(currentUserData);
+                sectionInfo.classList.add("hidden");
+                sectionDiagnostic.classList.add("hidden");
+                sectionResult.classList.remove("hidden");
+                sectionResult.classList.add("active");
+                saveCurrentPlan();
+                return;
+            }
 
             const result = savedPlan.result;
             document.getElementById("res-bmi").textContent = result.bmi;
@@ -439,24 +473,89 @@ document.addEventListener("DOMContentLoaded", () => {
             { name: "간식 🍌", cWeight: 0.10 }
         ];
 
+        const dailyTotal = { kcal: 0, carbs: 0, protein: 0, fat: 0 };
+        const mealCards = [];
+        const calorieSplit = currentUserData.goal === "diet"
+            ? { carbs: 0.40, protein: 0.35, fat: 0.25 }
+            : currentUserData.goal === "muscle"
+                ? { carbs: 0.50, protein: 0.30, fat: 0.20 }
+                : { carbs: 0.50, protein: 0.25, fat: 0.25 };
+
+        const calculateServing = (food, targetCalories) => {
+            const grams = Math.max(5, Math.round((targetCalories / food.kcal * 100) / 5) * 5);
+            const ratio = grams / 100;
+            return {
+                ...food,
+                grams,
+                totalKcal: food.kcal * ratio,
+                totalCarbs: food.carbs * ratio,
+                totalProtein: food.protein * ratio,
+                totalFat: food.fat * ratio
+            };
+        };
+
+        const renderFood = (role, icon, color, food) => `
+            <div class="diet-item">
+                <div class="food-heading">
+                    <span class="food-role"><i class="fa-solid ${icon}" style="color:${color}"></i> ${role}</span>
+                    <strong>${food.name}</strong>
+                    <b>${food.grams}g</b>
+                </div>
+                <div class="food-nutrition" aria-label="${food.name} 영양성분">
+                    <span><strong>${Math.round(food.totalKcal)}</strong> kcal</span>
+                    <span>탄 ${food.totalCarbs.toFixed(1)}g</span>
+                    <span>단 ${food.totalProtein.toFixed(1)}g</span>
+                    <span>지 ${food.totalFat.toFixed(1)}g</span>
+                </div>
+            </div>`;
+
         meals.forEach(meal => {
             const mealCal = Math.round(totalCal * meal.cWeight);
-            const carb = getRandomItem(dietData.carbs);
-            const protein = getRandomItem(dietData.protein);
-            const veg = getRandomItem(dietData.vegetables);
-            const fat = getRandomItem(dietData.fats);
+            const vegetableGrams = meal.cWeight === 0.10 ? 100 : 150;
+            const vegetableFood = getRandomItem(dietData.vegetables);
+            const vegetableCalories = vegetableFood.kcal * vegetableGrams / 100;
+            const foods = [
+                { role: "탄수화물", icon: "fa-bowl-rice", color: "var(--carbs)", food: calculateServing(getRandomItem(dietData.carbs), Math.max(20, mealCal * calorieSplit.carbs - vegetableCalories)) },
+                { role: "단백질", icon: "fa-egg", color: "var(--protein)", food: calculateServing(getRandomItem(dietData.protein), mealCal * calorieSplit.protein) },
+                { role: "채소", icon: "fa-carrot", color: "#22c55e", food: calculateServing(vegetableFood, vegetableCalories) },
+                { role: "지방", icon: "fa-seedling", color: "var(--fat)", food: calculateServing(getRandomItem(dietData.fats), mealCal * calorieSplit.fat) }
+            ];
+
+            const mealTotal = foods.reduce((total, item) => {
+                total.kcal += item.food.totalKcal;
+                total.carbs += item.food.totalCarbs;
+                total.protein += item.food.totalProtein;
+                total.fat += item.food.totalFat;
+                return total;
+            }, { kcal: 0, carbs: 0, protein: 0, fat: 0 });
+
+            Object.keys(dailyTotal).forEach(key => dailyTotal[key] += mealTotal[key]);
 
             const mealCard = document.createElement("div");
             mealCard.className = "diet-card";
             mealCard.innerHTML = `
-                <h3>${meal.name} <span style="font-size: 0.9rem; color: var(--text-light);">(약 ${mealCal} kcal)</span></h3>
-                <div class="diet-item"><i class="fa-solid fa-bowl-rice" style="color:var(--carbs)"></i> <strong>탄수화물:</strong> ${carb}</div>
-                <div class="diet-item"><i class="fa-solid fa-egg" style="color:var(--protein)"></i> <strong>단백질:</strong> ${protein}</div>
-                <div class="diet-item"><i class="fa-solid fa-carrot" style="color:green"></i> <strong>채소:</strong> ${veg}</div>
-                <div class="diet-item"><i class="fa-solid fa-seedling" style="color:var(--fat)"></i> <strong>지방:</strong> ${fat}</div>
+                <div class="meal-heading">
+                    <h3>${meal.name}</h3>
+                    <span>목표 ${mealCal} · 구성 ${Math.round(mealTotal.kcal)} kcal</span>
+                </div>
+                ${foods.map(item => renderFood(item.role, item.icon, item.color, item.food)).join("")}
+                <div class="meal-total">
+                    <span>끼니 합계</span>
+                    <strong>탄 ${mealTotal.carbs.toFixed(1)}g · 단 ${mealTotal.protein.toFixed(1)}g · 지 ${mealTotal.fat.toFixed(1)}g</strong>
+                </div>
             `;
-            dietContainer.appendChild(mealCard);
+            mealCards.push(mealCard);
         });
+
+        const summary = document.createElement("div");
+        summary.className = "diet-summary";
+        summary.innerHTML = `
+            <div><span>하루 목표</span><strong>${Math.round(totalCal).toLocaleString()} kcal</strong></div>
+            <div><span>추천 식단 합계</span><strong>${Math.round(dailyTotal.kcal).toLocaleString()} kcal</strong></div>
+            <div><span>영양성분 합계</span><strong>탄 ${dailyTotal.carbs.toFixed(0)}g · 단 ${dailyTotal.protein.toFixed(0)}g · 지 ${dailyTotal.fat.toFixed(0)}g</strong></div>
+        `;
+        dietContainer.appendChild(summary);
+        mealCards.forEach(card => dietContainer.appendChild(card));
     }
 
     /* ====================================
