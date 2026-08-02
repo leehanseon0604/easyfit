@@ -417,7 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!activeUserId || !currentUserData.recommendedCalories) return;
 
         const savedPlan = {
-            version: 6,
+            version: 7,
             savedAt: new Date().toISOString(),
             userData: currentUserData,
             result: {
@@ -469,7 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
             currentUserData = savedPlan.userData;
             fillSavedInputs(currentUserData);
 
-            if (savedPlan.version !== 6) {
+            if (savedPlan.version !== 7) {
                 generateResults(currentUserData);
                 sectionInfo.classList.add("hidden");
                 sectionDiagnostic.classList.add("hidden");
@@ -526,10 +526,20 @@ document.addEventListener("DOMContentLoaded", () => {
         renderCalendar(activeUserId);
     });
     workoutContainer.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-workout-direction]");
-        if (!button || button.disabled) return;
+        const exerciseButton = event.target.closest("[data-exercise-direction]");
+        if (exerciseButton) {
+            if (exerciseButton.disabled) return;
+            const activeDayPage = workoutContainer.querySelector(".workout-day-page:not([hidden])");
+            if (!activeDayPage) return;
+            const currentExercise = Number(activeDayPage.dataset.activeExercise) || 0;
+            showWorkoutExercise(activeDayPage, currentExercise + Number(exerciseButton.dataset.exerciseDirection), true);
+            return;
+        }
+
+        const dayButton = event.target.closest("[data-workout-direction]");
+        if (!dayButton || dayButton.disabled) return;
         const currentDay = Number(workoutContainer.dataset.activeWorkoutDay) || 0;
-        showWorkoutDay(currentDay + Number(button.dataset.workoutDirection), true);
+        showWorkoutDay(currentDay + Number(dayButton.dataset.workoutDirection), true);
     });
     dashboardNavButtons.forEach(button => {
         button.addEventListener("click", () => showDashboardPage(button.dataset.dashboardPage));
@@ -929,6 +939,8 @@ document.addEventListener("DOMContentLoaded", () => {
         workoutContainer.querySelectorAll('[data-workout-direction="1"]').forEach(button => {
             button.disabled = safeIndex === dayPages.length - 1;
         });
+        const savedExerciseIndex = Number(dayPages[safeIndex].dataset.activeExercise) || 0;
+        showWorkoutExercise(dayPages[safeIndex], savedExerciseIndex);
 
         if (shouldScroll) {
             workoutContainer.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -944,6 +956,48 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="workout-page-indicator" aria-live="polite"></div>
                 <button type="button" class="workout-page-button" data-workout-direction="1" aria-label="다음 운동일 보기">
                     <span>다음 DAY</span><i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </nav>
+        `;
+    }
+
+    function showWorkoutExercise(dayPage, exerciseIndex, shouldScroll = false) {
+        const exercisePages = [...dayPage.querySelectorAll(".workout-exercise-page")];
+        if (exercisePages.length === 0) return;
+
+        const safeIndex = Math.max(0, Math.min(exerciseIndex, exercisePages.length - 1));
+        dayPage.dataset.activeExercise = String(safeIndex);
+        exercisePages.forEach((page, index) => {
+            const isActive = index === safeIndex;
+            page.hidden = !isActive;
+            page.classList.toggle("active", isActive);
+            page.setAttribute("aria-hidden", String(!isActive));
+        });
+
+        dayPage.querySelectorAll(".exercise-page-indicator").forEach(indicator => {
+            indicator.innerHTML = `<strong>운동 ${safeIndex + 1}</strong><span>${safeIndex + 1} / ${exercisePages.length}</span>`;
+        });
+        dayPage.querySelectorAll('[data-exercise-direction="-1"]').forEach(button => {
+            button.disabled = safeIndex === 0;
+        });
+        dayPage.querySelectorAll('[data-exercise-direction="1"]').forEach(button => {
+            button.disabled = safeIndex === exercisePages.length - 1;
+        });
+
+        if (shouldScroll) {
+            dayPage.querySelector(".exercise-pagination")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }
+
+    function createExercisePagination() {
+        return `
+            <nav class="exercise-pagination" aria-label="운동 종목 이동">
+                <button type="button" class="exercise-page-button" data-exercise-direction="-1" aria-label="이전 운동 종목 보기">
+                    <i class="fa-solid fa-arrow-left"></i><span>이전 운동</span>
+                </button>
+                <div class="exercise-page-indicator" aria-live="polite"></div>
+                <button type="button" class="exercise-page-button" data-exercise-direction="1" aria-label="다음 운동 종목 보기">
+                    <span>다음 운동</span><i class="fa-solid fa-arrow-right"></i>
                 </button>
             </nav>
         `;
@@ -1026,7 +1080,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const selectedExercises = selectExercisesForDay(day.parts, durationPlan.exerciseCount);
 
             const exercisesHTML = selectedExercises.map((ex, index) => `
-                        <div class="workout-card mt-2">
+                        <div class="workout-card workout-exercise-page" data-workout-exercise="${index}" ${index === 0 ? "" : "hidden"} aria-hidden="${index !== 0}">
                             <h3>${index + 1}. ${ex.name}</h3>
                             <div class="workout-meta">
                                 <span><strong>부위:</strong> ${ex.part}</span> | 
@@ -1052,7 +1106,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <h3>${day.title}</h3>
                     <span>${durationPlan.timeLabel} · ${selectedExercises.length}종목</span>
                 </div>
-                ${exercisesHTML}
+                ${createExercisePagination()}
+                <div class="workout-exercise-pages">${exercisesHTML}</div>
+                ${createExercisePagination()}
             `;
             workoutContainer.appendChild(dayBox);
         });
