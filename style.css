@@ -4,6 +4,8 @@
 :root {
     --primary: #3b82f6;      /* 메인 파란색 */
     --primary-hover: #2563eb;
+    --theme-gradient: linear-gradient(135deg, #60a5fa, #3b82f6);
+    --theme-contrast: #ffffff;
     --secondary: #e2e8f0;    /* 서브 회색 */
     --secondary-hover: #cbd5e1;
     --bg-color: #f1f5f9;     /* 전체 배경색 (밝은 회색) */
@@ -52,8 +54,8 @@ h2 {
    레이아웃 및 헤더
    ==================================== */
 .header {
-    background: var(--primary);
-    color: white;
+    background: var(--theme-gradient);
+    color: var(--theme-contrast);
     text-align: center;
     padding: 2rem 1rem;
     box-shadow: var(--shadow);
@@ -128,7 +130,7 @@ h2 {
     cursor: pointer;
 }
 .dashboard-nav button:hover { background: var(--bg-color); color: var(--primary); }
-.dashboard-nav button.active { background: var(--primary); color: white; }
+.dashboard-nav button.active { background: var(--theme-gradient); color: var(--theme-contrast); }
 .dashboard-nav button i { width: 1.1rem; text-align: center; }
 .dashboard-content { min-width: 0; }
 .dashboard-page { display: none; }
@@ -214,7 +216,7 @@ input[type="number"]:focus, select:focus {
 
 .radio-group input[type="radio"]:checked + .radio-label {
     background: var(--primary);
-    color: white;
+    color: var(--theme-contrast);
     font-weight: bold;
 }
 
@@ -234,8 +236,8 @@ input[type="number"]:focus, select:focus {
 }
 
 .btn-primary {
-    background: var(--primary);
-    color: white;
+    background: var(--theme-gradient);
+    color: var(--theme-contrast);
 }
 
 .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
@@ -372,10 +374,19 @@ input[type="number"]:focus, select:focus {
 
 .calendar-header h2 { margin: 0.2rem 0 0; border: 0; padding: 0; }
 .calendar-kicker { color: var(--text-light); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; }
-.xp-total { display: grid; grid-template-columns: auto auto; align-items: center; gap: 0.1rem 0.5rem; padding: 0.8rem 1rem; border-radius: 12px; background: #eff6ff; color: var(--primary); }
-.xp-total i { grid-row: 1 / 3; font-size: 1.25rem; }
-.xp-total span { color: var(--text-light); font-size: 0.72rem; }
-.xp-total strong { font-size: 1.15rem; }
+.level-profile { width: min(420px, 100%); padding: 1rem; border: 1px solid color-mix(in srgb, var(--primary) 30%, white); border-radius: 14px; background: color-mix(in srgb, var(--primary) 8%, white); }
+.level-profile-top { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.7rem; }
+.theme-emblem { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: var(--theme-gradient); font-size: 1.25rem; box-shadow: var(--shadow); }
+.level-identity { display: flex; flex-direction: column; min-width: 0; }
+.level-identity small { overflow: hidden; color: var(--text-light); font-size: 0.68rem; text-overflow: ellipsis; white-space: nowrap; }
+.level-identity strong { color: var(--primary); font-size: 1.25rem; }
+.xp-total { display: flex; flex-direction: column; align-items: flex-end; }
+.xp-total span { color: var(--text-light); font-size: 0.65rem; }
+.xp-total strong { color: var(--primary); font-size: 0.95rem; }
+.level-progress { height: 9px; margin-top: 0.8rem; overflow: hidden; border-radius: 99px; background: var(--secondary); }
+.level-progress i { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--theme-gradient); transition: width 0.5s ease; }
+.level-profile-bottom { display: flex; justify-content: space-between; gap: 0.7rem; margin-top: 0.45rem; color: var(--text-light); font-size: 0.68rem; }
+.level-profile-bottom strong { color: var(--primary); }
 
 .calendar-toolbar { margin: 1.5rem 0 1rem; }
 .calendar-toolbar button { width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 50%; background: white; color: var(--text-dark); cursor: pointer; }
@@ -387,8 +398,9 @@ input[type="number"]:focus, select:focus {
 .calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-color); color: var(--text-light); font-size: 0.85rem; }
 .calendar-day.empty { border-color: transparent; background: transparent; }
 .calendar-day.today { border-color: var(--primary); color: var(--primary); font-weight: 800; }
-.calendar-day.completed { border-color: var(--primary); background: var(--primary); color: white; font-weight: 800; box-shadow: 0 5px 12px rgba(59, 130, 246, 0.2); }
+.calendar-day.completed { border-color: var(--primary); background: var(--theme-gradient); color: var(--theme-contrast); font-weight: 800; box-shadow: 0 5px 12px rgba(59, 130, 246, 0.2); }
 .calendar-day.completed i { font-size: 0.65rem; }
+.calendar-day.completed small { font-size: 0.55rem; font-weight: 900; }
 .calendar-day.partial { border-color: #93c5fd; background: #eff6ff; color: #2563eb; }
 .calendar-day.partial small { font-size: 0.58rem; font-weight: 800; }
 .calendar-legend { margin-top: 1rem; color: var(--text-light); font-size: 0.78rem; }
@@ -587,4 +599,6 @@ input[type="number"]:focus, select:focus {
     .sidebar-title { display: none; }
     .dashboard-nav { min-width: max-content; flex-direction: row; }
     .dashboard-nav button { width: auto; justify-content: center; padding: 0.75rem 0.9rem; }
+    .calendar-header { align-items: stretch; flex-direction: column; }
+    .level-profile { width: 100%; }
 }

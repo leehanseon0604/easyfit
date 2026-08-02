@@ -155,6 +155,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const calendarTitle = document.getElementById("calendar-title");
     const calendarGrid = document.getElementById("calendar-grid");
     const totalXp = document.getElementById("total-xp");
+    const userLevel = document.getElementById("user-level");
+    const levelProgressBar = document.getElementById("level-progress-bar");
+    const levelProgressText = document.getElementById("level-progress-text");
+    const levelThemeName = document.getElementById("level-theme-name");
+    const themeEmblem = document.getElementById("theme-emblem");
+    const themeConcept = document.getElementById("theme-concept");
     const btnCalendarPrev = document.getElementById("calendar-prev");
     const btnCalendarNext = document.getElementById("calendar-next");
     const dashboardNavButtons = [...document.querySelectorAll("[data-dashboard-page]")];
@@ -193,6 +199,20 @@ document.addEventListener("DOMContentLoaded", () => {
     let activeUserId = window.easyFitAuthUserId || null;
     let calendarViewDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const dailyCheckItemIds = ["breakfast", "lunch", "dinner", "snack", "workout"];
+    const levelThemes = [
+        { min: 100, key: "legend", icon: "👑", name: "Legend", concept: "전설적인 존재", primary: "#111827", hover: "#000000", contrast: "#FFD700", gradient: "linear-gradient(135deg, #111827 0%, #111827 68%, #FFD700 100%)" },
+        { min: 90, key: "champion", icon: "🏆", name: "Champion", concept: "최고의 선수", primary: "#FFD700", hover: "#EAB308", contrast: "#111827", gradient: "linear-gradient(135deg, #FFD700, #EAB308)" },
+        { min: 80, key: "space", icon: "🚀", name: "Space", concept: "우주를 향한 무한한 가능성", primary: "#7C3AED", hover: "#6D28D9", contrast: "#FFFFFF", gradient: "linear-gradient(135deg, #7C3AED, #4C1D95)" },
+        { min: 70, key: "cyber", icon: "⚡", name: "Cyber", concept: "미래지향적인 기술", primary: "#00E5FF", hover: "#00B8D4", contrast: "#0F172A", gradient: "linear-gradient(135deg, #00E5FF, #0891B2)" },
+        { min: 60, key: "mountain", icon: "⛰️", name: "Mountain", concept: "정상에 도전하는 의지", primary: "#2563EB", hover: "#1D4ED8", contrast: "#FFFFFF", gradient: "linear-gradient(135deg, #2563EB, #1E40AF)" },
+        { min: 50, key: "military", icon: "🪖", name: "Military", concept: "규율과 강인한 정신력", primary: "#556B2F", hover: "#3F5123", contrast: "#FFFFFF", gradient: "linear-gradient(135deg, #556B2F, #37451F)" },
+        { min: 40, key: "power", icon: "🥊", name: "Power", concept: "강인한 힘과 투지", primary: "#DC2626", hover: "#B91C1C", contrast: "#FFFFFF", gradient: "linear-gradient(135deg, #DC2626, #991B1B)" },
+        { min: 30, key: "sports", icon: "🏀", name: "Sports Arena", concept: "스포츠 선수의 열정", primary: "#F97316", hover: "#EA580C", contrast: "#FFFFFF", gradient: "linear-gradient(135deg, #F97316, #C2410C)" },
+        { min: 20, key: "gym", icon: "🏋️", name: "Gym", concept: "본격적인 웨이트 트레이닝", primary: "#6B7280", hover: "#4B5563", contrast: "#FFFFFF", gradient: "linear-gradient(135deg, #6B7280, #374151)" },
+        { min: 10, key: "nature", icon: "🌿", name: "Nature", concept: "건강한 습관과 성장", primary: "#22C55E", hover: "#16A34A", contrast: "#FFFFFF", gradient: "linear-gradient(135deg, #22C55E, #15803D)" },
+        { min: 1, key: "beginner", icon: "🌱", name: "Beginner", concept: "운동을 처음 시작하는 초보자", primary: "#60A5FA", hover: "#3B82F6", contrast: "#FFFFFF", gradient: "linear-gradient(135deg, #60A5FA, #3B82F6)" }
+    ];
+    const maxLevelTheme = { key: "ascendant", icon: "🌌", name: "Ascendant", concept: "한계를 넘어선 궁극의 존재", primary: "#7C3AED", hover: "#00E5FF", contrast: "#FFFFFF", gradient: "linear-gradient(120deg, #111827 0%, #7C3AED 28%, #00E5FF 56%, #FFFFFF 78%, #FFD700 100%)" };
 
     const storageKey = (uid) => `easyfit-saved-plan:${uid}`;
     const localDateKey = (date = new Date()) => {
@@ -202,6 +222,40 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${year}-${month}-${day}`;
     };
     const dailyCheckKey = (uid) => `easyfit-daily-check:${uid}:${localDateKey()}`;
+
+    function calculateLevel(totalExperience) {
+        let remainingXp = totalExperience;
+        for (let level = 1; level <= 100; level++) {
+            const requiredXp = 500 + ((level - 1) * 100);
+            if (remainingXp < requiredXp) {
+                return { level, isMax: false, currentXp: remainingXp, requiredXp, progress: remainingXp / requiredXp * 100 };
+            }
+            remainingXp -= requiredXp;
+        }
+        return { level: "MAX", isMax: true, currentXp: 0, requiredXp: 0, progress: 100 };
+    }
+
+    function applyLevelTheme(levelInfo, totalExperience) {
+        const theme = levelInfo.isMax
+            ? maxLevelTheme
+            : levelThemes.find(item => levelInfo.level >= item.min);
+        const root = document.documentElement;
+        root.style.setProperty("--primary", theme.primary);
+        root.style.setProperty("--primary-hover", theme.hover);
+        root.style.setProperty("--theme-gradient", theme.gradient);
+        root.style.setProperty("--theme-contrast", theme.contrast);
+        document.body.dataset.levelTheme = theme.key;
+
+        userLevel.textContent = levelInfo.isMax ? "Lv.MAX" : `Lv.${levelInfo.level}`;
+        totalXp.textContent = `${totalExperience.toLocaleString()} XP`;
+        levelProgressBar.style.width = `${levelInfo.progress}%`;
+        levelProgressText.textContent = levelInfo.isMax
+            ? "최고 레벨 달성 · XP MAX"
+            : `${levelInfo.currentXp.toLocaleString()} / ${levelInfo.requiredXp.toLocaleString()} XP`;
+        levelThemeName.textContent = `${theme.icon} ${theme.name}`;
+        themeEmblem.textContent = theme.icon;
+        themeConcept.textContent = theme.concept;
+    }
 
     function getXpHistory(uid) {
         const history = { totalXp: 0, records: new Map() };
@@ -235,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 fullCompletionStreak = lastFullDay !== null && currentDay === lastFullDay + 1
                     ? fullCompletionStreak + 1
                     : 1;
-                multiplier = Math.min(fullCompletionStreak, 3);
+                multiplier = fullCompletionStreak;
                 lastFullDay = currentDay;
             } else {
                 fullCompletionStreak = 0;
@@ -256,7 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const previousRecord = getXpHistory(uid).records.get(localDateKey(yesterday));
-        const multiplier = previousRecord?.isFull ? Math.min(previousRecord.streak + 1, 3) : 1;
+        const multiplier = previousRecord?.isFull ? previousRecord.streak + 1 : 1;
         return { earnedXp: 120 * multiplier, multiplier };
     }
 
@@ -269,7 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
 
         calendarTitle.textContent = `${year}년 ${month + 1}월`;
-        totalXp.textContent = `${xpHistory.totalXp.toLocaleString()} XP`;
+        applyLevelTheme(calculateLevel(xpHistory.totalXp), xpHistory.totalXp);
         calendarGrid.innerHTML = weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join("");
 
         for (let blank = 0; blank < firstWeekday; blank++) {
@@ -286,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
             calendarGrid.insertAdjacentHTML("beforeend", `
                 <div class="${classes}" title="${dayRecord ? `${dayRecord.completedCount}/5 완료 · ${dayRecord.earnedXp} XP 획득` : ""}">
                     <span>${day}</span>
-                    ${isCompleted ? '<i class="fa-solid fa-check"></i>' : isPartial ? `<small>${dayRecord.completedCount}/5</small>` : ""}
+                    ${isCompleted ? `<i class="fa-solid fa-check"></i>${dayRecord.multiplier > 1 ? `<small>×${dayRecord.multiplier}</small>` : ""}` : isPartial ? `<small>${dayRecord.completedCount}/5</small>` : ""}
                 </div>`);
         }
     }
