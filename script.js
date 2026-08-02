@@ -21,7 +21,8 @@ const dietData = {
         { name: "참치", kcal: 116, carbs: 0, protein: 26.0, fat: 0.8 },
         { name: "두부", kcal: 80, carbs: 1.9, protein: 8.5, fat: 4.2 },
         { name: "달걀", kcal: 143, carbs: 0.7, protein: 12.6, fat: 9.5 },
-        { name: "그릭요거트", kcal: 97, carbs: 3.9, protein: 9.0, fat: 5.0 }
+        { name: "달걀 흰자", kcal: 52, carbs: 0.7, protein: 10.9, fat: 0.2 },
+        { name: "무지방 그릭요거트", kcal: 59, carbs: 3.6, protein: 10.3, fat: 0.4 }
     ],
     vegetables: [
         { name: "양상추", kcal: 15, carbs: 2.9, protein: 1.4, fat: 0.2 },
@@ -173,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!activeUserId || !currentUserData.recommendedCalories) return;
 
         const savedPlan = {
-            version: 4,
+            version: 5,
             savedAt: new Date().toISOString(),
             userData: currentUserData,
             result: {
@@ -225,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
             currentUserData = savedPlan.userData;
             fillSavedInputs(currentUserData);
 
-            if (savedPlan.version !== 4) {
+            if (savedPlan.version !== 5) {
                 generateResults(currentUserData);
                 sectionInfo.classList.add("hidden");
                 sectionDiagnostic.classList.add("hidden");
@@ -342,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 식단 다시 뽑기 버튼
     btnRegenDiet.addEventListener("click", () => {
         if (currentUserData.recommendedCalories) {
-            renderDietPlan(currentUserData.recommendedCalories);
+            renderDietPlan(currentUserData.recommendedCalories, currentUserData.macroTargets);
             saveCurrentPlan();
         }
     });
@@ -406,7 +407,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (data.goal === "muscle") {
             recommendedCalories = maintenanceCal + 250; // 약 200~300kcal 높게
         }
-        recommendedCalories = Math.min(2500, Math.round(recommendedCalories));
+        data.targetProteinGrams = Math.round(data.weight * 2);
+        const minimumCaloriesForProteinPlan = (data.targetProteinGrams * 4) + 600;
+        recommendedCalories = Math.min(2500, Math.max(Math.round(recommendedCalories), Math.min(2500, minimumCaloriesForProteinPlan)));
         data.recommendedCalories = recommendedCalories;
 
         // 화면 표출 - 신체 스탯
@@ -416,10 +419,10 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("res-cal").textContent = recommendedCalories.toLocaleString();
 
         // D. 영양소 비율 계산 (탄수화물 : 단백질 : 지방)
-        calculateMacros(recommendedCalories, data.goal);
+        data.macroTargets = calculateMacros(recommendedCalories, data);
 
         // E. 식단 추천 생성
-        renderDietPlan(recommendedCalories);
+        renderDietPlan(recommendedCalories, data.macroTargets);
 
         // F. 운동 프로그램 생성
         renderWorkoutPlan(data);
@@ -428,21 +431,18 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ====================================
        4. 영양소 비율 계산 및 표시
        ==================================== */
-    function calculateMacros(calories, goal) {
-        let carbRatio = 0.5, proteinRatio = 0.3, fatRatio = 0.2;
+    function calculateMacros(calories, data) {
+        const proteinGrams = data.targetProteinGrams;
+        const proteinCalories = proteinGrams * 4;
+        const caloriesAfterProtein = Math.max(0, calories - proteinCalories);
+        const desiredFatRatio = data.goal === "muscle" ? 0.20 : 0.25;
+        const fatCalories = Math.min(calories * desiredFatRatio, caloriesAfterProtein * 0.5);
+        const fatGrams = Math.round(fatCalories / 9);
+        const carbGrams = Math.max(0, Math.round((calories - proteinCalories - (fatGrams * 9)) / 4));
 
-        if (goal === "diet") {
-            carbRatio = 0.4; proteinRatio = 0.35; fatRatio = 0.25;
-        } else if (goal === "muscle") {
-            carbRatio = 0.5; proteinRatio = 0.3; fatRatio = 0.2;
-        } else {
-            carbRatio = 0.5; proteinRatio = 0.25; fatRatio = 0.25;
-        }
-
-        // g당 칼로리: 탄 4kcal, 단 4kcal, 지 9kcal
-        const carbGrams = Math.round((calories * carbRatio) / 4);
-        const proteinGrams = Math.round((calories * proteinRatio) / 4);
-        const fatGrams = Math.round((calories * fatRatio) / 9);
+        const carbRatio = (carbGrams * 4) / calories;
+        const proteinRatio = proteinCalories / calories;
+        const fatRatio = (fatGrams * 9) / calories;
 
         // 프로그레스 바 적용
         document.getElementById("bar-carbs").style.width = `${carbRatio * 100}%`;
@@ -458,9 +458,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const macroText = document.getElementById("macro-text");
         macroText.innerHTML = `
             <span><strong>탄수화물:</strong> ${carbGrams}g</span>
-            <span><strong>단백질:</strong> ${proteinGrams}g</span>
+            <span><strong>단백질 (체중×2):</strong> ${proteinGrams}g</span>
             <span><strong>지방:</strong> ${fatGrams}g</span>
         `;
+
+        return { carbGrams, proteinGrams, fatGrams };
     }
 
     /* ====================================
@@ -470,7 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    function renderDietPlan(totalCal) {
+    function renderDietPlan(totalCal, macroTargets) {
         const dietContainer = document.getElementById("diet-container");
         dietContainer.innerHTML = "";
 
@@ -483,14 +485,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const dailyTotal = { kcal: 0, carbs: 0, protein: 0, fat: 0 };
         const mealCards = [];
-        const calorieSplit = currentUserData.goal === "diet"
-            ? { carbs: 0.40, protein: 0.35, fat: 0.25 }
-            : currentUserData.goal === "muscle"
-                ? { carbs: 0.50, protein: 0.30, fat: 0.20 }
-                : { carbs: 0.50, protein: 0.25, fat: 0.25 };
 
-        const calculateServing = (food, targetCalories) => {
-            const grams = Math.max(5, Math.round((targetCalories / food.kcal * 100) / 5) * 5);
+        const servingFromGrams = (food, requestedGrams, step = 1) => {
+            const grams = Math.max(step, Math.round(requestedGrams / step) * step);
             const ratio = grams / 100;
             return {
                 ...food,
@@ -499,6 +496,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 totalCarbs: food.carbs * ratio,
                 totalProtein: food.protein * ratio,
                 totalFat: food.fat * ratio
+            };
+        };
+
+        const servingFromCalories = (food, targetCalories, step = 1) =>
+            servingFromGrams(food, targetCalories / food.kcal * 100, step);
+
+        const solveCarbAndProtein = (carbFood, proteinFood, targetCalories, targetProtein) => {
+            const denominator = (carbFood.kcal * proteinFood.protein) - (proteinFood.kcal * carbFood.protein);
+            let carbUnits = 0;
+            let proteinUnits = 0;
+
+            if (Math.abs(denominator) > 0.001) {
+                carbUnits = ((targetCalories * proteinFood.protein) - (proteinFood.kcal * targetProtein)) / denominator;
+                proteinUnits = ((carbFood.kcal * targetProtein) - (targetCalories * carbFood.protein)) / denominator;
+            }
+
+            if (carbUnits < 0 || proteinUnits < 0 || !Number.isFinite(carbUnits) || !Number.isFinite(proteinUnits)) {
+                proteinUnits = Math.max(0, targetProtein / proteinFood.protein);
+                carbUnits = Math.max(0, (targetCalories - (proteinUnits * proteinFood.kcal)) / carbFood.kcal);
+            }
+
+            return {
+                carb: servingFromGrams(carbFood, carbUnits * 100),
+                protein: servingFromGrams(proteinFood, proteinUnits * 100)
             };
         };
 
@@ -521,15 +542,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
         meals.forEach(meal => {
             const mealCal = Math.round(totalCal * meal.cWeight);
+            const mealProteinTarget = macroTargets.proteinGrams * meal.cWeight;
+            const mealFatCalories = macroTargets.fatGrams * 9 * meal.cWeight;
             let foods = [];
 
             if (meal.kind === "snack") {
-                const snackProtein = foodsNamed("protein", ["그릭요거트"]);
+                const snackProtein = foodsNamed("protein", ["무지방 그릭요거트"]);
                 const snackFats = foodsNamed("fats", ["아몬드", "호두", "캐슈넛"]);
+                const carbFood = getRandomItem(dietData.fruits);
+                const proteinFood = getRandomItem(snackProtein);
+                const fatServing = servingFromCalories(getRandomItem(snackFats), mealFatCalories);
+                const solved = solveCarbAndProtein(
+                    carbFood,
+                    proteinFood,
+                    Math.max(20, mealCal - fatServing.totalKcal),
+                    Math.max(1, mealProteinTarget - fatServing.totalProtein)
+                );
                 foods = [
-                    { role: "과일", icon: "fa-apple-whole", color: "#ef4444", food: calculateServing(getRandomItem(dietData.fruits), mealCal * 0.45) },
-                    { role: "유제품", icon: "fa-cow", color: "var(--protein)", food: calculateServing(getRandomItem(snackProtein), mealCal * 0.35) },
-                    { role: "견과류", icon: "fa-seedling", color: "var(--fat)", food: calculateServing(getRandomItem(snackFats), mealCal * 0.20) }
+                    { role: "과일", icon: "fa-apple-whole", color: "#ef4444", food: solved.carb },
+                    { role: "유제품", icon: "fa-cow", color: "var(--protein)", food: solved.protein },
+                    { role: "견과류", icon: "fa-seedling", color: "var(--fat)", food: fatServing }
                 ];
             } else {
                 const vegetableGrams = meal.kind === "breakfast" ? 100 : 150;
@@ -540,19 +572,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? foodsNamed("carbs", ["오트밀", "통밀빵", "고구마"])
                     : dietData.carbs;
                 const proteinPool = meal.kind === "breakfast"
-                    ? foodsNamed("protein", ["달걀", "두부", "그릭요거트"])
-                    : dietData.protein.filter(food => !["그릭요거트", "달걀", "두부"].includes(food.name));
+                    ? foodsNamed("protein", ["달걀 흰자", "무지방 그릭요거트"])
+                    : dietData.protein.filter(food => !["무지방 그릭요거트", "달걀", "달걀 흰자", "두부"].includes(food.name));
                 const fatPool = meal.kind === "breakfast"
                     ? foodsNamed("fats", ["아몬드", "호두", "캐슈넛", "아보카도"])
                     : dietData.fats;
                 const vegetableFood = getRandomItem(vegetablePool);
-                const vegetableCalories = vegetableFood.kcal * vegetableGrams / 100;
+                const vegetableServing = servingFromGrams(vegetableFood, vegetableGrams);
+                const fatServing = servingFromCalories(getRandomItem(fatPool), mealFatCalories);
+                const solved = solveCarbAndProtein(
+                    getRandomItem(carbPool),
+                    getRandomItem(proteinPool),
+                    Math.max(20, mealCal - vegetableServing.totalKcal - fatServing.totalKcal),
+                    Math.max(1, mealProteinTarget - vegetableServing.totalProtein - fatServing.totalProtein)
+                );
 
                 foods = [
-                    { role: "탄수화물", icon: "fa-bowl-rice", color: "var(--carbs)", food: calculateServing(getRandomItem(carbPool), Math.max(20, mealCal * calorieSplit.carbs - vegetableCalories)) },
-                    { role: "단백질", icon: "fa-egg", color: "var(--protein)", food: calculateServing(getRandomItem(proteinPool), mealCal * calorieSplit.protein) },
-                    { role: "채소", icon: "fa-carrot", color: "#22c55e", food: calculateServing(vegetableFood, vegetableCalories) },
-                    { role: "지방", icon: "fa-seedling", color: "var(--fat)", food: calculateServing(getRandomItem(fatPool), mealCal * calorieSplit.fat) }
+                    { role: "탄수화물", icon: "fa-bowl-rice", color: "var(--carbs)", food: solved.carb },
+                    { role: "단백질", icon: "fa-egg", color: "var(--protein)", food: solved.protein },
+                    { role: "채소", icon: "fa-carrot", color: "#22c55e", food: vegetableServing },
+                    { role: "지방", icon: "fa-seedling", color: "var(--fat)", food: fatServing }
                 ];
             }
 
@@ -587,7 +626,7 @@ document.addEventListener("DOMContentLoaded", () => {
         summary.innerHTML = `
             <div><span>하루 목표</span><strong>${Math.round(totalCal).toLocaleString()} kcal</strong></div>
             <div><span>추천 식단 합계</span><strong>${Math.round(dailyTotal.kcal).toLocaleString()} kcal</strong></div>
-            <div><span>영양성분 합계</span><strong>탄 ${dailyTotal.carbs.toFixed(0)}g · 단 ${dailyTotal.protein.toFixed(0)}g · 지 ${dailyTotal.fat.toFixed(0)}g</strong></div>
+            <div><span>영양성분 합계</span><strong>탄 ${dailyTotal.carbs.toFixed(0)}g · 단 ${dailyTotal.protein.toFixed(0)}g (목표 ${macroTargets.proteinGrams}g) · 지 ${dailyTotal.fat.toFixed(0)}g</strong></div>
         `;
         dietContainer.appendChild(summary);
         mealCards.forEach(card => dietContainer.appendChild(card));
