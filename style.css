@@ -393,6 +393,11 @@ input[type="number"]:focus, select:focus {
 .level-progress i { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--theme-gradient); transition: width 0.5s ease; }
 .level-profile-bottom { display: flex; justify-content: space-between; gap: 0.7rem; margin-top: 0.45rem; color: var(--text-light); font-size: 0.68rem; }
 .level-profile-bottom strong { color: var(--primary); }
+.theme-test-controls { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.8rem; padding-top: 0.7rem; border-top: 1px dashed color-mix(in srgb, var(--primary) 35%, white); }
+.theme-test-controls span { margin-right: auto; color: var(--text-light); font-size: 0.72rem; }
+.theme-test-controls button { padding: 0.38rem 0.65rem; border: 1px solid color-mix(in srgb, var(--primary) 38%, white); border-radius: 7px; background: white; color: var(--primary); font-size: 0.72rem; font-weight: 800; cursor: pointer; }
+.theme-test-controls button:hover { background: var(--primary); color: var(--theme-contrast); }
+.theme-test-controls button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .calendar-toolbar { margin: 1.5rem 0 1rem; }
 .calendar-toolbar button { width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 50%; background: white; color: var(--text-dark); cursor: pointer; }

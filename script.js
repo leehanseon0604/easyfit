@@ -161,6 +161,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const levelThemeName = document.getElementById("level-theme-name");
     const themeEmblem = document.getElementById("theme-emblem");
     const themeConcept = document.getElementById("theme-concept");
+    const testXpValue = document.getElementById("test-xp-value");
+    const btnAddTestXp100 = document.getElementById("add-test-xp-100");
+    const btnAddTestXp1000 = document.getElementById("add-test-xp-1000");
+    const btnResetTestXp = document.getElementById("reset-test-xp");
     const btnCalendarPrev = document.getElementById("calendar-prev");
     const btnCalendarNext = document.getElementById("calendar-next");
     const dashboardNavButtons = [...document.querySelectorAll("[data-dashboard-page]")];
@@ -222,6 +226,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${year}-${month}-${day}`;
     };
     const dailyCheckKey = (uid) => `easyfit-daily-check:${uid}:${localDateKey()}`;
+    const testXpKey = (uid) => `easyfit-theme-test-xp:${uid}`;
+
+    function changeTestXp(amount) {
+        if (!activeUserId) return;
+        const currentTestXp = Number(localStorage.getItem(testXpKey(activeUserId))) || 0;
+        const nextTestXp = Math.max(0, currentTestXp + amount);
+        if (nextTestXp === 0) localStorage.removeItem(testXpKey(activeUserId));
+        else localStorage.setItem(testXpKey(activeUserId), String(nextTestXp));
+        renderCalendar(activeUserId);
+    }
 
     function calculateLevel(totalExperience) {
         let remainingXp = totalExperience;
@@ -259,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getXpHistory(uid) {
-        const history = { totalXp: 0, records: new Map() };
+        const history = { totalXp: 0, testXp: 0, records: new Map() };
         if (!uid) return history;
         const prefix = `easyfit-daily-check:${uid}:`;
         const savedRecords = [];
@@ -301,6 +315,8 @@ document.addEventListener("DOMContentLoaded", () => {
             history.totalXp += earnedXp;
             history.records.set(date, { completedCount, isFull, multiplier, streak: fullCompletionStreak, earnedXp });
         });
+        history.testXp = Math.max(0, Number(localStorage.getItem(testXpKey(uid))) || 0);
+        history.totalXp += history.testXp;
         return history;
     }
 
@@ -325,6 +341,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         calendarTitle.textContent = `${year}년 ${month + 1}월`;
         applyLevelTheme(calculateLevel(xpHistory.totalXp), xpHistory.totalXp);
+        testXpValue.innerHTML = `<i class="fa-solid fa-flask"></i> 테마 테스트 XP: ${xpHistory.testXp.toLocaleString()}`;
+        [btnAddTestXp100, btnAddTestXp1000, btnResetTestXp].forEach(button => button.disabled = !uid);
         calendarGrid.innerHTML = weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join("");
 
         for (let blank = 0; blank < firstWeekday; blank++) {
@@ -522,6 +540,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     btnCalendarNext.addEventListener("click", () => {
         calendarViewDate = new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1);
+        renderCalendar(activeUserId);
+    });
+    btnAddTestXp100.addEventListener("click", () => changeTestXp(100));
+    btnAddTestXp1000.addEventListener("click", () => changeTestXp(1000));
+    btnResetTestXp.addEventListener("click", () => {
+        if (!activeUserId) return;
+        localStorage.removeItem(testXpKey(activeUserId));
         renderCalendar(activeUserId);
     });
     dashboardNavButtons.forEach(button => {
