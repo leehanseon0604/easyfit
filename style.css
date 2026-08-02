@@ -382,6 +382,19 @@ input[type="number"]:focus, select:focus {
 .workout-card {
     margin-bottom: 1rem;
 }
+.workout-day-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    padding: 0.9rem 1rem;
+    border-radius: 8px;
+    background: #eff6ff;
+    border-left: 4px solid var(--primary);
+}
+.workout-day-heading h3 { color: var(--primary); font-size: 1.3rem; margin: 0; }
+.workout-day-heading span { color: var(--text-light); font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
 .workout-card h3 { color: var(--text-dark); margin-bottom: 0.5rem; font-size: 1.2rem;}
 .workout-meta { font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem; }
 .workout-details p { margin-bottom: 0.3rem; }
@@ -404,5 +417,6 @@ input[type="number"]:focus, select:focus {
     .food-heading { flex-wrap: wrap; }
     .food-role { width: 100%; }
     .food-nutrition { grid-template-columns: repeat(2, 1fr); }
+    .workout-day-heading { align-items: flex-start; flex-direction: column; }
     .btn-group { flex-direction: column; }
 }

@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!activeUserId || !currentUserData.recommendedCalories) return;
 
         const savedPlan = {
-            version: 2,
+            version: 3,
             savedAt: new Date().toISOString(),
             userData: currentUserData,
             result: {
@@ -217,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
             currentUserData = savedPlan.userData;
             fillSavedInputs(currentUserData);
 
-            if (savedPlan.version !== 2) {
+            if (savedPlan.version !== 3) {
                 generateResults(currentUserData);
                 sectionInfo.classList.add("hidden");
                 sectionDiagnostic.classList.add("hidden");
@@ -597,23 +597,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
         splitTypeSpan.textContent = splitName;
 
+        const durationPlan = data.duration === ">60"
+            ? { exerciseCount: 7, timeLabel: "약 65~80분" }
+            : data.duration === "30-60"
+                ? { exerciseCount: 5, timeLabel: "약 45~60분" }
+                : { exerciseCount: 3, timeLabel: "약 25~30분" };
+
+        const shuffleExercises = (exercises) => {
+            const shuffled = [...exercises];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const randomIndex = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[i]];
+            }
+            return shuffled;
+        };
+
+        const selectExercisesForDay = (parts, targetCount) => {
+            const queues = parts
+                .map(partKey => shuffleExercises(workoutData[partKey] || []))
+                .filter(queue => queue.length > 0);
+            const selected = [];
+
+            while (selected.length < targetCount && queues.some(queue => queue.length > 0)) {
+                queues.forEach(queue => {
+                    if (selected.length < targetCount && queue.length > 0) {
+                        selected.push(queue.shift());
+                    }
+                });
+            }
+            return selected;
+        };
+
         // 분할일자별 카드 렌더링
         splitDays.forEach(day => {
             const dayBox = document.createElement("div");
             dayBox.className = "mt-4";
-            
-            let exercisesHTML = "";
-            let orderIdx = 1;
+            const selectedExercises = selectExercisesForDay(day.parts, durationPlan.exerciseCount);
 
-            day.parts.forEach(partKey => {
-                const availableExercises = workoutData[partKey];
-                if (availableExercises && availableExercises.length > 0) {
-                    // 각 부위별로 1~2개 운동 무작위 추출
-                    const ex = getRandomItem(availableExercises);
-
-                    exercisesHTML += `
+            const exercisesHTML = selectedExercises.map((ex, index) => `
                         <div class="workout-card mt-2">
-                            <h3>${orderIdx}. ${ex.name}</h3>
+                            <h3>${index + 1}. ${ex.name}</h3>
                             <div class="workout-meta">
                                 <span><strong>부위:</strong> ${ex.part}</span> | 
                                 <span><strong>세부 근육:</strong> ${ex.subPart}</span> | 
@@ -631,13 +654,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <i class="fa-brands fa-youtube"></i> 유튜브 가이드 영상 보기
                             </a>
                         </div>
-                    `;
-                    orderIdx++;
-                }
-            });
+                    `).join("");
 
             dayBox.innerHTML = `
-                <h3 style="color:var(--primary); font-size:1.3rem; margin-bottom:0.5rem;">${day.title}</h3>
+                <div class="workout-day-heading">
+                    <h3>${day.title}</h3>
+                    <span>${durationPlan.timeLabel} · ${selectedExercises.length}종목</span>
+                </div>
                 ${exercisesHTML}
             `;
             workoutContainer.appendChild(dayBox);
