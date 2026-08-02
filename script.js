@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dailyCheckInputs = [...document.querySelectorAll('#daily-checklist input[type="checkbox"]')];
     const calendarTitle = document.getElementById("calendar-title");
     const calendarGrid = document.getElementById("calendar-grid");
-    const totalPoints = document.getElementById("total-points");
+    const totalXp = document.getElementById("total-xp");
     const btnCalendarPrev = document.getElementById("calendar-prev");
     const btnCalendarNext = document.getElementById("calendar-next");
     const dashboardNavButtons = [...document.querySelectorAll("[data-dashboard-page]")];
@@ -195,45 +195,81 @@ document.addEventListener("DOMContentLoaded", () => {
     const dailyCheckItemIds = ["breakfast", "lunch", "dinner", "snack", "workout"];
 
     const storageKey = (uid) => `easyfit-saved-plan:${uid}`;
-    const localDateKey = () => {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        const day = String(today.getDate()).padStart(2, "0");
+    const localDateKey = (date = new Date()) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
         return `${year}-${month}-${day}`;
     };
     const dailyCheckKey = (uid) => `easyfit-daily-check:${uid}:${localDateKey()}`;
 
-    function getCompletedDates(uid) {
-        const completedDates = new Set();
-        if (!uid) return completedDates;
+    function getXpHistory(uid) {
+        const history = { totalXp: 0, records: new Map() };
+        if (!uid) return history;
         const prefix = `easyfit-daily-check:${uid}:`;
+        const savedRecords = [];
 
         for (let index = 0; index < localStorage.length; index++) {
             const key = localStorage.key(index);
             if (!key?.startsWith(prefix)) continue;
             try {
                 const record = JSON.parse(localStorage.getItem(key));
-                if (dailyCheckItemIds.every(itemId => Boolean(record.items?.[itemId]))) {
-                    completedDates.add(key.slice(prefix.length));
-                }
+                savedRecords.push({ date: key.slice(prefix.length), record });
             } catch (error) {
-                console.error("캘린더 기록 확인 오류:", error);
+                console.error("경험치 기록 확인 오류:", error);
             }
         }
-        return completedDates;
+
+        savedRecords.sort((a, b) => a.date.localeCompare(b.date));
+        let fullCompletionStreak = 0;
+        let lastFullDay = null;
+
+        savedRecords.forEach(({ date, record }) => {
+            const completedCount = dailyCheckItemIds.filter(itemId => Boolean(record.items?.[itemId])).length;
+            const isFull = completedCount === dailyCheckItemIds.length;
+            const [year, month, day] = date.split("-").map(Number);
+            const currentDay = Date.UTC(year, month - 1, day) / 86400000;
+            let multiplier = 1;
+
+            if (isFull) {
+                fullCompletionStreak = lastFullDay !== null && currentDay === lastFullDay + 1
+                    ? fullCompletionStreak + 1
+                    : 1;
+                multiplier = Math.min(fullCompletionStreak, 3);
+                lastFullDay = currentDay;
+            } else {
+                fullCompletionStreak = 0;
+                lastFullDay = null;
+            }
+
+            const earnedXp = isFull ? 120 * multiplier : completedCount * 20;
+            history.totalXp += earnedXp;
+            history.records.set(date, { completedCount, isFull, multiplier, streak: fullCompletionStreak, earnedXp });
+        });
+        return history;
+    }
+
+    function getProspectiveXp(uid, completedCount) {
+        if (completedCount < dailyCheckItemIds.length) {
+            return { earnedXp: completedCount * 20, multiplier: 1 };
+        }
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const previousRecord = getXpHistory(uid).records.get(localDateKey(yesterday));
+        const multiplier = previousRecord?.isFull ? Math.min(previousRecord.streak + 1, 3) : 1;
+        return { earnedXp: 120 * multiplier, multiplier };
     }
 
     function renderCalendar(uid) {
         const year = calendarViewDate.getFullYear();
         const month = calendarViewDate.getMonth();
-        const completedDates = getCompletedDates(uid);
+        const xpHistory = getXpHistory(uid);
         const firstWeekday = new Date(year, month, 1).getDay();
         const lastDay = new Date(year, month + 1, 0).getDate();
         const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
 
         calendarTitle.textContent = `${year}년 ${month + 1}월`;
-        totalPoints.textContent = `${(completedDates.size * 100).toLocaleString()} P`;
+        totalXp.textContent = `${xpHistory.totalXp.toLocaleString()} XP`;
         calendarGrid.innerHTML = weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join("");
 
         for (let blank = 0; blank < firstWeekday; blank++) {
@@ -243,23 +279,29 @@ document.addEventListener("DOMContentLoaded", () => {
         for (let day = 1; day <= lastDay; day++) {
             const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
             const isToday = dateKey === localDateKey();
-            const isCompleted = completedDates.has(dateKey);
-            const classes = ["calendar-day", isToday ? "today" : "", isCompleted ? "completed" : ""].filter(Boolean).join(" ");
+            const dayRecord = xpHistory.records.get(dateKey);
+            const isCompleted = Boolean(dayRecord?.isFull);
+            const isPartial = Boolean(dayRecord && !dayRecord.isFull);
+            const classes = ["calendar-day", isToday ? "today" : "", isCompleted ? "completed" : "", isPartial ? "partial" : ""].filter(Boolean).join(" ");
             calendarGrid.insertAdjacentHTML("beforeend", `
-                <div class="${classes}" title="${isCompleted ? "체크리스트 완료 · 100포인트 획득" : ""}">
+                <div class="${classes}" title="${dayRecord ? `${dayRecord.completedCount}/5 완료 · ${dayRecord.earnedXp} XP 획득` : ""}">
                     <span>${day}</span>
-                    ${isCompleted ? '<i class="fa-solid fa-check"></i>' : ""}
+                    ${isCompleted ? '<i class="fa-solid fa-check"></i>' : isPartial ? `<small>${dayRecord.completedCount}/5</small>` : ""}
                 </div>`);
         }
     }
 
     function updateDailyCheckButton() {
         const completedCount = dailyCheckInputs.filter(input => input.checked).length;
-        const allCompleted = completedCount === dailyCheckInputs.length;
+        const hasCompletedItem = completedCount > 0;
         const isLocked = dailyCheckInputs.some(input => input.disabled);
-        btnSaveDailyCheck.disabled = !activeUserId || !allCompleted || isLocked;
+        btnSaveDailyCheck.disabled = !activeUserId || !hasCompletedItem || isLocked;
         if (activeUserId && !isLocked) {
-            dailyCheckStatus.textContent = `${completedCount}/${dailyCheckInputs.length}개 완료 · 모두 체크하면 100포인트를 받을 수 있습니다.`;
+            const xpPreview = getProspectiveXp(activeUserId, completedCount);
+            const bonusText = completedCount === dailyCheckInputs.length
+                ? ` · 올클리어 보너스${xpPreview.multiplier > 1 ? ` × ${xpPreview.multiplier} 연속 배수` : ""}`
+                : "";
+            dailyCheckStatus.textContent = `${completedCount}/${dailyCheckInputs.length}개 완료 · 저장 시 +${xpPreview.earnedXp} XP${bonusText}`;
         }
     }
 
@@ -286,15 +328,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     input.disabled = true;
                 });
                 const completedCount = dailyCheckInputs.filter(input => input.checked).length;
-                const earnedPoints = completedCount === dailyCheckInputs.length ? 100 : 0;
-                dailyCheckStatus.textContent = `오늘 기록 완료 · ${completedCount}/${dailyCheckInputs.length}개 실천 · +${earnedPoints} P`;
-                btnSaveDailyCheck.textContent = earnedPoints ? "오늘 완료 · 100 P 획득" : "오늘 기록 완료";
+                const dayXp = getXpHistory(uid).records.get(record.date || localDateKey());
+                const earnedXp = dayXp?.earnedXp ?? completedCount * 20;
+                dailyCheckStatus.textContent = `오늘 기록 완료 · ${completedCount}/${dailyCheckInputs.length}개 실천 · +${earnedXp} XP`;
+                btnSaveDailyCheck.textContent = `오늘 기록 완료 · ${earnedXp} XP 획득`;
             } catch (error) {
                 console.error("오늘의 체크리스트 복원 오류:", error);
                 localStorage.removeItem(dailyCheckKey(uid));
             }
         } else {
-            dailyCheckStatus.textContent = "5개 항목을 모두 완료하면 오늘 기록과 100포인트를 저장할 수 있습니다.";
+            dailyCheckStatus.textContent = "완료한 항목마다 20 XP, 5개 올클리어 시 보너스 20 XP를 받을 수 있습니다.";
             btnSaveDailyCheck.textContent = "오늘 기록 저장하기";
         }
         updateDailyCheckButton();
@@ -302,13 +345,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function saveDailyChecklist() {
         if (!activeUserId || localStorage.getItem(dailyCheckKey(activeUserId))) return;
-        if (!dailyCheckInputs.every(input => input.checked)) return;
+        const completedCount = dailyCheckInputs.filter(input => input.checked).length;
+        if (completedCount === 0) return;
 
         const items = Object.fromEntries(dailyCheckInputs.map(input => [input.value, input.checked]));
         localStorage.setItem(dailyCheckKey(activeUserId), JSON.stringify({
             date: localDateKey(),
             savedAt: new Date().toISOString(),
-            points: 100,
+            completedCount,
             items
         }));
         loadDailyChecklist(activeUserId);
