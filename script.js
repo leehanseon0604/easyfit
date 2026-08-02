@@ -133,6 +133,98 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 계산 데이터 저장 변수
     let currentUserData = {};
+    let activeUserId = window.easyFitAuthUserId || null;
+
+    const storageKey = (uid) => `easyfit-saved-plan:${uid}`;
+
+    function saveCurrentPlan() {
+        if (!activeUserId || !currentUserData.recommendedCalories) return;
+
+        const savedPlan = {
+            version: 1,
+            savedAt: new Date().toISOString(),
+            userData: currentUserData,
+            result: {
+                bmi: document.getElementById("res-bmi").textContent,
+                bmiDesc: document.getElementById("res-bmi-desc").textContent,
+                bmr: document.getElementById("res-bmr").textContent,
+                calories: document.getElementById("res-cal").textContent,
+                carbsText: document.getElementById("bar-carbs").textContent,
+                carbsWidth: document.getElementById("bar-carbs").style.width,
+                proteinText: document.getElementById("bar-protein").textContent,
+                proteinWidth: document.getElementById("bar-protein").style.width,
+                fatText: document.getElementById("bar-fat").textContent,
+                fatWidth: document.getElementById("bar-fat").style.width,
+                macroHtml: document.getElementById("macro-text").innerHTML,
+                dietHtml: document.getElementById("diet-container").innerHTML,
+                splitType: document.getElementById("res-split-type").textContent,
+                workoutHtml: document.getElementById("workout-container").innerHTML
+            }
+        };
+
+        localStorage.setItem(storageKey(activeUserId), JSON.stringify(savedPlan));
+    }
+
+    function fillSavedInputs(data) {
+        inputHeight.value = data.height ?? "";
+        inputWeight.value = data.weight ?? "";
+        inputAge.value = data.age ?? "";
+        const genderInput = document.querySelector(`input[name="gender"][value="${data.gender}"]`);
+        if (genderInput) genderInput.checked = true;
+        selectGoal.value = data.goal || "diet";
+        inputTargetWeight.value = data.targetWeight ?? "";
+        selectBodyType.value = data.bodyType || "normal";
+        selectFrequency.value = data.frequency || "2-3";
+        selectDuration.value = data.duration || "30-60";
+        selectExperience.value = data.experience || "beginner";
+        inputWeeks.value = data.weeks ?? "";
+        targetWeightContainer.classList.toggle("hidden", data.goal === "health");
+    }
+
+    function restoreSavedPlan(uid) {
+        if (!uid) return;
+
+        try {
+            const rawPlan = localStorage.getItem(storageKey(uid));
+            if (!rawPlan) return;
+            const savedPlan = JSON.parse(rawPlan);
+            if (!savedPlan.userData || !savedPlan.result) return;
+
+            currentUserData = savedPlan.userData;
+            fillSavedInputs(currentUserData);
+
+            const result = savedPlan.result;
+            document.getElementById("res-bmi").textContent = result.bmi;
+            document.getElementById("res-bmi-desc").textContent = result.bmiDesc;
+            document.getElementById("res-bmr").textContent = result.bmr;
+            document.getElementById("res-cal").textContent = result.calories;
+            document.getElementById("bar-carbs").textContent = result.carbsText;
+            document.getElementById("bar-carbs").style.width = result.carbsWidth;
+            document.getElementById("bar-protein").textContent = result.proteinText;
+            document.getElementById("bar-protein").style.width = result.proteinWidth;
+            document.getElementById("bar-fat").textContent = result.fatText;
+            document.getElementById("bar-fat").style.width = result.fatWidth;
+            document.getElementById("macro-text").innerHTML = result.macroHtml;
+            document.getElementById("diet-container").innerHTML = result.dietHtml;
+            document.getElementById("res-split-type").textContent = result.splitType;
+            document.getElementById("workout-container").innerHTML = result.workoutHtml;
+
+            sectionInfo.classList.add("hidden");
+            sectionDiagnostic.classList.add("hidden");
+            sectionResult.classList.remove("hidden");
+            sectionResult.classList.add("active");
+        } catch (error) {
+            console.error("저장된 프로그램 복원 오류:", error);
+            localStorage.removeItem(storageKey(uid));
+        }
+    }
+
+    window.addEventListener("easyfit-auth-changed", (event) => {
+        activeUserId = event.detail.uid;
+        if (activeUserId) restoreSavedPlan(activeUserId);
+    });
+
+    if (activeUserId) restoreSavedPlan(activeUserId);
 
     /* ====================================
        1. 이벤트 리스너 설정
@@ -168,6 +260,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 결과 생성 버튼 클릭
     btnGenerate.addEventListener("click", () => {
+        if (!activeUserId) {
+            alert("맞춤 프로그램을 저장하려면 먼저 상단의 익명 로그인 버튼을 눌러주세요.");
+            return;
+        }
+
         const weeks = parseInt(inputWeeks.value);
         if (!weeks || weeks <= 0) {
             alert("프로그램 이용 기간을 올바르게 입력해주세요.");
@@ -197,17 +294,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 화면 전환
         switchSection(sectionDiagnostic, sectionResult);
+        saveCurrentPlan();
     });
 
     // 식단 다시 뽑기 버튼
     btnRegenDiet.addEventListener("click", () => {
         if (currentUserData.recommendedCalories) {
             renderDietPlan(currentUserData.recommendedCalories);
+            saveCurrentPlan();
         }
     });
 
     // 처음으로 돌아가기 버튼
     btnRestart.addEventListener("click", () => {
+        if (activeUserId) localStorage.removeItem(storageKey(activeUserId));
+        currentUserData = {};
         document.getElementById("form-info").reset();
         document.getElementById("form-diagnostic").reset();
         targetWeightContainer.classList.remove("hidden");

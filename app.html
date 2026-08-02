@@ -17,8 +17,8 @@
         
         <!-- 🔥 추가된 부분: 로그인 버튼 및 상태 표시 -->
         <div class="auth-section" style="margin-top: 15px;">
-            <button type="button" class="btn btn-primary" id="anonLoginBtn" style="padding: 5px 15px; font-size: 0.9em;">
-                익명으로 시작하기
+            <button type="button" class="btn btn-primary" id="anonLoginBtn" style="padding: 8px 16px; font-size: 0.9em; width: auto;">
+                로그인하고 저장하기
             </button>
             <span id="status" style="margin-left: 10px; font-size: 0.9em; color: #666;">
                 현재 상태: 로그아웃 됨
@@ -181,7 +181,7 @@
     <!-- 🔥 추가된 부분: 파이어베이스 로그인 스크립트 (반드시 </body> 바로 위에 배치) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // ★★★ 본인의 Firebase 설정값으로 반드시 교체하세요! ★★★
 	const firebaseConfig = {
@@ -197,6 +197,9 @@
         // 파이어베이스 초기화
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        setPersistence(auth, browserLocalPersistence).catch((error) => {
+            console.error("로그인 유지 설정 오류:", error);
+        });
 
         const loginBtn = document.getElementById('anonLoginBtn');
         const statusText = document.getElementById('status');
@@ -218,13 +221,17 @@
             if (user) {
                 // 로그인 완료 시 버튼 숨기고 상태 텍스트 변경
                 loginBtn.style.display = 'none';
-                statusText.innerText = "환영합니다! (고유 ID: " + user.uid.substring(0, 6) + "...)";
-                statusText.style.color = "#2e7d32"; // 초록색으로 변경
+                statusText.innerText = "로그인됨 · 이 기기에 맞춤 프로그램이 자동 저장됩니다.";
+                statusText.style.color = "#ffffff";
+                window.easyFitAuthUserId = user.uid;
+                window.dispatchEvent(new CustomEvent('easyfit-auth-changed', { detail: { uid: user.uid } }));
             } else {
                 // 로그아웃 상태 시 버튼 다시 보이기
                 loginBtn.style.display = 'inline-block';
                 statusText.innerText = "현재 상태: 로그아웃 됨";
-                statusText.style.color = "#666";
+                statusText.style.color = "#dbeafe";
+                window.easyFitAuthUserId = null;
+                window.dispatchEvent(new CustomEvent('easyfit-auth-changed', { detail: { uid: null } }));
             }
         });
     </script>
