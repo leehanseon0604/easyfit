@@ -3,17 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Easy Fit 맞춤형 운동 및 식단 프로그램">
-    <meta http-equiv="refresh" content="0; url=app.html">
-    <title>Easy Fit | 청소년 맞춤형 건강관리</title>
-    <script>
-        const appUrl = new URL("app.html", window.location.href);
-        appUrl.search = window.location.search;
-        appUrl.hash = window.location.hash;
-        window.location.replace(appUrl.href);
-    </script>
+    <meta name="description" content="신체 정보와 목표를 바탕으로 식단과 운동 루틴을 설계하는 Easy Fit">
+    <title>Easy Fit | 나에게 맞는 건강 루틴</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --ink: #172033;
+            --muted: #64748b;
+            --line: #dbe7f6;
+            --surface: #ffffff;
+            --background: #f4f8fd;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 82% 22%, rgba(147, 197, 253, 0.3), transparent 29%),
+                linear-gradient(145deg, #f8fbff 0%, var(--background) 62%, #edf5ff 100%);
+            color: var(--ink);
+            font-family: "Noto Sans KR", sans-serif;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        .shell { width: min(1160px, calc(100% - 48px)); margin: 0 auto; }
+
+        .site-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 88px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 11px;
+            font: 800 23px/1 "Manrope", sans-serif;
+            letter-spacing: -0.04em;
+        }
+
+        .brand-mark {
+            position: relative;
+            width: 34px;
+            height: 34px;
+            overflow: hidden;
+            border-radius: 11px;
+            background: linear-gradient(145deg, #60a5fa, var(--primary-dark));
+            box-shadow: 0 9px 20px rgba(37, 99, 235, 0.24);
+        }
+
+        .brand-mark::before,
+        .brand-mark::after {
+            position: absolute;
+            content: "";
+            border-radius: 99px;
+            background: white;
+        }
+
+        .brand-mark::before { width: 15px; height: 6px; top: 10px; left: 10px; transform: rotate(-35deg); }
+        .brand-mark::after { width: 7px; height: 7px; top: 8px; right: 7px; }
+
+        .header-cta {
+            padding: 11px 18px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--primary-dark);
+            font-size: 14px;
+            font-weight: 800;
+            backdrop-filter: blur(12px);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .header-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(37, 99, 235, 0.14); }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 0.92fr) minmax(440px, 1.08fr);
+            align-items: center;
+            gap: 76px;
+            min-height: calc(100vh - 132px);
+            padding: 56px 0 92px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            color: var(--primary-dark);
+            font: 800 12px/1 "Manrope", sans-serif;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .eyebrow::before { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); content: ""; }
+
+        h1 {
+            margin: 25px 0 22px;
+            font-size: clamp(48px, 6vw, 76px);
+            line-height: 1.08;
+            letter-spacing: -0.065em;
+        }
+
+        h1 span { color: var(--primary); }
+
+        .hero-copy {
+            max-width: 520px;
+            margin: 0;
+            color: var(--muted);
+            font-size: clamp(16px, 1.45vw, 19px);
+            line-height: 1.8;
+            word-break: keep-all;
+        }
+
+        .primary-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 34px;
+            padding: 16px 23px;
+            border-radius: 14px;
+            background: var(--primary);
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            box-shadow: 0 16px 32px rgba(37, 99, 235, 0.25);
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .primary-cta::after { content: "→"; font: 700 20px/1 "Manrope", sans-serif; }
+        .primary-cta:hover { transform: translateY(-3px); background: var(--primary-dark); box-shadow: 0 20px 36px rgba(37, 99, 235, 0.3); }
+
+        .quick-points {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-top: 29px;
+            color: #718096;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .quick-points span::before { margin-right: 6px; color: var(--primary); content: "✓"; }
+
+        .visual {
+            position: relative;
+            display: grid;
+            min-height: 540px;
+            place-items: center;
+        }
+
+        .visual-orb {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 45% 55% 58% 42% / 48% 38% 62% 52%;
+            background: linear-gradient(145deg, rgba(191, 219, 254, 0.7), rgba(147, 197, 253, 0.38));
+            transform: rotate(-8deg);
+        }
+
+        .report-card {
+            position: relative;
+            z-index: 1;
+            width: min(470px, 90%);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 35px 80px rgba(30, 64, 175, 0.18);
+            backdrop-filter: blur(20px);
+            transform: rotate(2deg);
+        }
+
+        .report-top { padding: 27px 30px 25px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .report-label { display: flex; align-items: center; justify-content: space-between; color: #dbeafe; font-size: 12px; font-weight: 700; }
+        .report-label b { padding: 5px 9px; border-radius: 99px; background: rgba(255, 255, 255, 0.16); color: white; }
+        .report-value { display: flex; align-items: flex-end; gap: 9px; margin-top: 22px; }
+        .report-value strong { font: 800 52px/0.95 "Manrope", sans-serif; letter-spacing: -0.05em; }
+        .report-value span { padding-bottom: 6px; color: #dbeafe; font-size: 13px; }
+
+        .report-body { padding: 24px 30px 28px; }
+        .report-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+        .report-row span { color: var(--muted); }
+        .report-row strong { font: 800 14px "Manrope", sans-serif; }
+        .macro-bar { display: flex; height: 9px; margin-top: 24px; overflow: hidden; border-radius: 99px; }
+        .macro-bar i:nth-child(1) { width: 52%; background: #60a5fa; }
+        .macro-bar i:nth-child(2) { width: 28%; background: #ec4899; }
+        .macro-bar i:nth-child(3) { width: 20%; background: #fbbf24; }
+
+        .float-chip {
+            position: absolute;
+            z-index: 2;
+            padding: 12px 15px;
+            border: 1px solid rgba(219, 231, 246, 0.8);
+            border-radius: 13px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 14px 35px rgba(30, 64, 175, 0.13);
+            font-size: 12px;
+            font-weight: 800;
+            backdrop-filter: blur(12px);
+        }
+
+        .float-chip.top { top: 74px; right: -5px; }
+        .float-chip.bottom { bottom: 62px; left: 0; }
+        .float-chip::before { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: var(--primary); content: ""; }
+
+        .site-footer {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            width: min(1160px, calc(100% - 48px));
+            color: #94a3b8;
+            font: 600 11px "Manrope", sans-serif;
+            transform: translateX(-50%);
+        }
+
+        @media (max-width: 950px) {
+            .hero { grid-template-columns: 1fr; gap: 20px; padding-top: 70px; text-align: center; }
+            .hero-copy { margin-inline: auto; }
+            .quick-points { justify-content: center; }
+            .visual { min-height: 500px; }
+            .site-footer { position: static; width: auto; padding: 22px 0; text-align: center; transform: none; }
+        }
+
+        @media (max-width: 560px) {
+            .shell { width: min(100% - 30px, 1160px); }
+            .site-header { height: 74px; }
+            .header-cta { padding: 9px 12px; font-size: 12px; }
+            .hero { min-height: auto; padding: 48px 0 55px; }
+            h1 { margin-top: 20px; font-size: 45px; }
+            .hero-copy { font-size: 15px; }
+            .visual { min-height: 410px; }
+            .visual-orb { width: 360px; height: 360px; }
+            .report-card { width: calc(100% - 28px); border-radius: 22px; }
+            .report-top { padding: 22px; }
+            .report-body { padding: 19px 22px 22px; }
+            .report-value strong { font-size: 42px; }
+            .float-chip { padding: 9px 11px; font-size: 10px; }
+            .float-chip.top { top: 34px; right: -2px; }
+            .float-chip.bottom { bottom: 20px; left: -2px; }
+            .quick-points { gap: 10px 14px; }
+        }
+    </style>
 </head>
 <body>
-    <p>Easy Fit을 여는 중입니다. 자동으로 이동하지 않으면 <a href="app.html">여기를 눌러주세요.</a></p>
+    <header class="site-header shell">
+        <a class="brand" href="index.html" aria-label="Easy Fit 시작페이지">
+            <span class="brand-mark" aria-hidden="true"></span>
+            Easy Fit
+        </a>
+        <a class="header-cta" href="app.html">시작하기</a>
+    </header>
+
+    <main class="hero shell">
+        <section class="hero-content">
+            <span class="eyebrow">Personal fitness guide</span>
+            <h1>건강 루틴,<br><span>쉽게 시작하세요.</span></h1>
+            <p class="hero-copy">신체 정보와 목표만 입력하면 나에게 맞는 식단과 운동 계획을 한 번에 만들어 드립니다.</p>
+            <a class="primary-cta" href="app.html">Easy Fit 시작하기</a>
+            <div class="quick-points" aria-label="주요 특징">
+                <span>맞춤 분석</span>
+                <span>기기 자동 저장</span>
+                <span>무료 이용</span>
+            </div>
+        </section>
+
+        <section class="visual" aria-label="Easy Fit 맞춤 분석 결과 미리보기">
+            <div class="visual-orb" aria-hidden="true"></div>
+            <article class="report-card">
+                <div class="report-top">
+                    <div class="report-label"><span>오늘의 맞춤 리포트</span><b>READY</b></div>
+                    <div class="report-value"><strong>2,040</strong><span>kcal / day</span></div>
+                </div>
+                <div class="report-body">
+                    <div class="report-row"><span>운동 루틴</span><strong>4 DAYS</strong></div>
+                    <div class="report-row"><span>예상 운동 시간</span><strong>45 MIN</strong></div>
+                    <div class="report-row"><span>맞춤 식단</span><strong>4 MEALS</strong></div>
+                    <div class="macro-bar" aria-label="탄수화물, 단백질, 지방 비율"><i></i><i></i><i></i></div>
+                </div>
+            </article>
+            <div class="float-chip top">목표 기반 설계</div>
+            <div class="float-chip bottom">오늘부터 실천</div>
+        </section>
+    </main>
+
+    <footer class="site-footer">© 2026 EASY FIT</footer>
 </body>
 </html>
