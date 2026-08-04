@@ -404,11 +404,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (completedCount === 0) return;
 
         const items = Object.fromEntries(dailyCheckInputs.map(input => [input.value, input.checked]));
+        const date = localDateKey();
         localStorage.setItem(dailyCheckKey(activeUserId), JSON.stringify({
-            date: localDateKey(),
+            date,
             savedAt: new Date().toISOString(),
             completedCount,
             items
+        }));
+        window.dispatchEvent(new CustomEvent("easyfit-local-data-changed", {
+            detail: { uid: activeUserId, type: "daily-check", date }
         }));
         loadDailyChecklist(activeUserId);
     }
@@ -439,6 +443,9 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         localStorage.setItem(storageKey(activeUserId), JSON.stringify(savedPlan));
+        window.dispatchEvent(new CustomEvent("easyfit-local-data-changed", {
+            detail: { uid: activeUserId, type: "plan" }
+        }));
     }
 
     function fillSavedInputs(data) {
@@ -632,7 +639,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 처음으로 돌아가기 버튼
     btnRestart.addEventListener("click", () => {
-        if (activeUserId) localStorage.removeItem(storageKey(activeUserId));
+        if (activeUserId) {
+            localStorage.removeItem(storageKey(activeUserId));
+            window.dispatchEvent(new CustomEvent("easyfit-local-data-changed", {
+                detail: { uid: activeUserId, type: "plan-delete", savedAt: new Date().toISOString() }
+            }));
+        }
         currentUserData = {};
         document.getElementById("form-info").reset();
         document.getElementById("form-diagnostic").reset();

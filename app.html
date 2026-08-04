@@ -15,14 +15,13 @@
         </div>
         <p class="subtitle">나만을 위한 스마트한 운동 & 식단 솔루션</p>
         
-        <!-- 🔥 추가된 부분: 로그인 버튼 및 상태 표시 -->
-        <div class="auth-section" style="margin-top: 15px;">
-            <button type="button" class="btn btn-primary" id="anonLoginBtn" style="padding: 8px 16px; font-size: 0.9em; width: auto;">
-                로그인하고 저장하기
+        <div class="auth-section">
+            <button type="button" class="google-login-button" id="googleLoginBtn">
+                <i class="fa-brands fa-google" aria-hidden="true"></i>
+                <span>Google로 로그인</span>
             </button>
-            <span id="status" style="margin-left: 10px; font-size: 0.9em; color: #666;">
-                현재 상태: 로그아웃 됨
-            </span>
+            <span id="status" role="status" aria-live="polite">로그인 상태를 확인하는 중입니다.</span>
+            <button type="button" class="auth-logout-button" id="logoutBtn" hidden>로그아웃</button>
         </div>
     </header>
 
@@ -242,63 +241,6 @@
     </main>
 
     <script src="script.js"></script>
-
-    <!-- 🔥 추가된 부분: 파이어베이스 로그인 스크립트 (반드시 </body> 바로 위에 배치) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        // ★★★ 본인의 Firebase 설정값으로 반드시 교체하세요! ★★★
-	const firebaseConfig = {
-  	  apiKey: "AIzaSyCboscZTe1jNvwcFN_xP6PXp_DDGe23-l4",
-  	  authDomain: "easyfit-d1c3f.firebaseapp.com",
-  	  projectId: "easyfit-d1c3f",
-  	  storageBucket: "easyfit-d1c3f.firebasestorage.app",
-  	  messagingSenderId: "716822981492",
-  	  appId: "1:716822981492:web:cbf983649af704a21c1a21",
-  	  measurementId: "G-6Y2TJ0BWFP"
-	};
-
-        // 파이어베이스 초기화
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        setPersistence(auth, browserLocalPersistence).catch((error) => {
-            console.error("로그인 유지 설정 오류:", error);
-        });
-
-        const loginBtn = document.getElementById('anonLoginBtn');
-        const statusText = document.getElementById('status');
-
-        // 익명 로그인 버튼 클릭 이벤트
-        loginBtn.addEventListener('click', () => {
-            signInAnonymously(auth)
-                .then(() => {
-                    alert("익명 로그인에 성공했습니다!");
-                })
-                .catch((error) => {
-                    console.error("로그인 에러:", error);
-                    alert("로그인 실패: " + error.message);
-                });
-        });
-
-        // 로그인 상태 실시간 감지
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // 로그인 완료 시 버튼 숨기고 상태 텍스트 변경
-                loginBtn.style.display = 'none';
-                statusText.innerText = "로그인됨 · 이 기기에 맞춤 프로그램이 자동 저장됩니다.";
-                statusText.style.color = "#ffffff";
-                window.easyFitAuthUserId = user.uid;
-                window.dispatchEvent(new CustomEvent('easyfit-auth-changed', { detail: { uid: user.uid } }));
-            } else {
-                // 로그아웃 상태 시 버튼 다시 보이기
-                loginBtn.style.display = 'inline-block';
-                statusText.innerText = "현재 상태: 로그아웃 됨";
-                statusText.style.color = "#dbeafe";
-                window.easyFitAuthUserId = null;
-                window.dispatchEvent(new CustomEvent('easyfit-auth-changed', { detail: { uid: null } }));
-            }
-        });
-    </script>
+    <script type="module" src="auth.js"></script>
 </body>
 </html>
