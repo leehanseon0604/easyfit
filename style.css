@@ -398,20 +398,23 @@ input[type="number"]:focus, select:focus {
 .calendar-toolbar button:hover { border-color: var(--primary); color: var(--primary); }
 .calendar-toolbar strong { font-size: 1.1rem; }
 
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.45rem; }
-.calendar-weekday { padding: 0.35rem; color: var(--text-light); text-align: center; font-size: 0.75rem; font-weight: 700; }
-.calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-color); color: var(--text-light); font-size: 0.85rem; }
+.calendar-card { min-width: 0; overflow: hidden; }
+.calendar-grid { width: 100%; min-width: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.45rem; }
+.calendar-grid > * { min-width: 0; max-width: 100%; }
+.calendar-weekday { padding: 0.35rem 0; overflow: hidden; color: var(--text-light); text-align: center; font-size: 0.75rem; font-weight: 700; }
+.calendar-day { width: 100%; min-width: 0; aspect-ratio: 1 / 1; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-color); color: var(--text-light); font-size: 0.85rem; line-height: 1; }
+.calendar-day > * { max-width: 100%; flex: 0 0 auto; }
 .calendar-day.empty { border-color: transparent; background: transparent; }
 .calendar-day.today { border-color: var(--primary); color: var(--primary); font-weight: 800; }
 .calendar-day.completed { border-color: var(--primary); background: var(--theme-gradient); color: var(--theme-contrast); font-weight: 800; box-shadow: 0 5px 12px rgba(59, 130, 246, 0.2); }
 .calendar-day.completed i { font-size: 0.65rem; }
-.calendar-day.completed small { font-size: 0.55rem; font-weight: 900; }
+.calendar-day.completed small { display: block; font-size: 0.55rem; font-weight: 900; line-height: 1; white-space: nowrap; }
 .calendar-day.partial { border-color: #93c5fd; background: #eff6ff; color: #2563eb; }
 .calendar-day.partial small { font-size: 0.58rem; font-weight: 800; }
-.calendar-legend { margin-top: 1rem; color: var(--text-light); font-size: 0.78rem; }
-.calendar-legend span { display: flex; align-items: center; gap: 0.4rem; }
+.calendar-legend { min-width: 0; flex-wrap: wrap; margin-top: 1rem; color: var(--text-light); font-size: 0.78rem; }
+.calendar-legend span { min-width: 0; display: flex; align-items: center; gap: 0.4rem; }
 .calendar-legend span i { width: 10px; height: 10px; border-radius: 3px; background: var(--primary); }
-.calendar-legend strong { color: var(--primary); }
+.calendar-legend strong { min-width: 0; color: var(--primary); overflow-wrap: anywhere; }
 
 /* ====================================
    결과 화면 - 영양소 비율 바
@@ -712,9 +715,14 @@ input[type="number"]:focus, select:focus {
     .stats-grid { grid-template-columns: 1fr; }
     .daily-checklist { grid-template-columns: repeat(2, 1fr); }
     .calendar-header { align-items: flex-start; }
-    .calendar-grid { gap: 0.25rem; }
-    .calendar-day { border-radius: 6px; font-size: 0.75rem; }
-    .calendar-legend { align-items: flex-start; flex-direction: column; }
+    .calendar-card { padding: 1.25rem 1rem; }
+    .calendar-grid { gap: clamp(0.12rem, 0.8vw, 0.25rem); }
+    .calendar-weekday { padding-inline: 0; font-size: clamp(0.65rem, 3vw, 0.75rem); }
+    .calendar-day { border-radius: 6px; font-size: clamp(0.68rem, 3vw, 0.75rem); }
+    .calendar-day.completed i { font-size: 0.58rem; }
+    .calendar-day.completed small { font-size: 0.5rem; }
+    .calendar-legend { align-items: flex-start; flex-direction: column; gap: 0.4rem; }
+    .calendar-legend strong { font-size: 0.7rem; line-height: 1.45; }
     .diet-grid { grid-template-columns: 1fr; }
     .diet-summary { grid-template-columns: 1fr; }
     .food-heading { flex-wrap: wrap; }
